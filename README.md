@@ -3,7 +3,7 @@
 Aplikacion i thjeshtë për kontratën **Autorizim / Authorization**. Klienti e plotëson dhe e firmos në telefon, dhe kontrata i vjen kompanisë si PDF në WhatsApp.
 
 - Nuk ka nevojë për server dhe nuk ka kosto. Faqja hostohet falas në GitHub Pages.
-- Të dhënat e klientëve dhe fotot e dokumenteve **nuk ruhen në internet**. PDF-ja krijohet në telefonin e klientit dhe dërgohet direkt te kompania.
+- Kontratat ruhen në **Google Drive-in tënd** dhe të vijnë me **email** (shih seksionin 6).
 
 ---
 
@@ -73,6 +73,40 @@ Pas çdo ndryshimi në GitHub, faqja përditësohet vetë brenda 1–2 minutash.
 - Linku përmban vetëm të dhënat e makinës dhe të qirasë. Të dhënat e klientit nuk kalojnë kurrë në link.
 - Klienti mund të ndryshojë teorikisht linkun. Kontrollo PDF-në kur të vjen, para se t'i japësh makinën.
 
+## 6. Google Drive + Email (ruajtja automatike)
+
+Kur klienti firmos, kontrata **ruhet vetë në Google Drive** dhe **dërgohet me email** te Perfect Car Rental dhe te klienti, nëse ka shkruar email-in. Me link kalojnë edhe fotot e makinës që bën stafi.
+
+Script-i punon në llogarinë tënde Google (mund të jetë email-i personal). Email-et dalin me emrin **"Perfect Car Rental"**.
+
+### Vendosja (një herë, ~5 minuta)
+1. Hyr në **script.google.com** me email-in tënd dhe shtyp **New project**.
+2. Fshi gjithçka që është në editor dhe ngjit përmbajtjen e skedarit [`google-apps-script/Code.gs`](google-apps-script/Code.gs).
+3. Lart te `COMPANY_EMAIL` vendos email-in e Perfect Car Rental, ku do të vijnë kontratat.
+4. Shtyp 💾 **Save**. Pastaj zgjidh funksionin **`provo`** dhe shtyp **▶ Run**.
+   - Google kërkon leje. Shtyp **Review permissions**, zgjidh email-in tënd, pastaj **Advanced → Go to … (unsafe) → Allow**.
+   - Kjo është normale për script-et që shkruan vetë. Script-i ka qasje vetëm në Drive dhe dërgim email-esh në llogarinë tënde.
+5. Lart djathtas shtyp **Deploy → New deployment**:
+   - ⚙️ **Select type → Web app**
+   - **Execute as:** *Me*
+   - **Who has access:** *Anyone*
+   - **Deploy**, pastaj kopjo **Web app URL** (fillon me `https://script.google.com/macros/s/...`).
+6. Te `index.html`, te blloku `CO`, vendos linkun: `api: "https://script.google.com/macros/s/.../exec",`
+
+### Ku ruhen
+```
+Google Drive
+└── Perfect Car Rental – Kontratat
+    ├── 2026
+    │   └── 11 Nëntor
+    │       └── Ervis_Mydini_20-11-2026.pdf
+    └── _Fotot e makinave (stafi)
+```
+
+### Kufijtë
+- Gmail falas lejon rreth **100 email në ditë**. Çdo kontratë dërgon 1–2 email.
+- Nëse ndryshon `Code.gs` më vonë: **Deploy → Manage deployments → ✏️ → Version: New version → Deploy**. Linku mbetet i njëjti.
+
 ## Skedarët
 
 | Skedari | Çfarë është |
@@ -82,3 +116,4 @@ Pas çdo ndryshimi në GitHub, faqja përditësohet vetë brenda 1–2 minutash.
 | `assets/logo-*.png` | logoja |
 | `assets/icon-*.png` | ikona e aplikacionit |
 | `assets/html2pdf.bundle.min.js` | libraria që krijon PDF-në |
+| `google-apps-script/Code.gs` | kodi për Google Drive + Email |

@@ -231,7 +231,7 @@ canvas.sig{width:100%;height:190px;display:block;touch-action:none}
       <button class="btn wa" type="button" id="mkLink">Krijo linkun për klientin</button>
       <button class="btn main" type="button" id="here">Plotëso këtu (në tablet)</button>
     </div>
-    <p class="hint" style="margin:10px 0 0"><b>Plotëso këtu:</b> klienti plotëson në këtë pajisje dhe fotot e makinës që bëre hyjnë në kontratë.<br><b>Linku:</b> klienti plotëson në telefonin e vet. Fotot e makinës nuk kalojnë dot me link, prandaj kontrata e klientit vjen pa to. Fotot i ke ti në telefon. Për kontratë të plotë me foto përdor “Plotëso këtu”.</p>
+    <p class="hint" id="modeHint" style="margin:10px 0 0"><b>Plotëso këtu:</b> klienti plotëson në këtë pajisje dhe fotot e makinës që bëre hyjnë në kontratë.<br><b>Linku:</b> klienti plotëson në telefonin e vet. Fotot e makinës nuk kalojnë dot me link, prandaj kontrata e klientit vjen pa to. Fotot i ke ti në telefon. Për kontratë të plotë me foto përdor “Plotëso këtu”.</p>
     <div class="row"><button class="btn" type="button" id="clearStaff">Pastro formularin (kontratë e re)</button></div>
     <div class="msg" id="smsg"></div>
     <div id="linkOut" class="hidden">
@@ -260,6 +260,7 @@ canvas.sig{width:100%;height:190px;display:block;touch-action:none}
       <label class="f">Nr. ID / Passport *<input id="ci"></label>
       <label class="f">Nr. patentës / Driving licence *<input id="cp"></label>
       <label class="f">Nr. tel / Phone *<input id="ct" type="tel" autocomplete="tel" placeholder="+355 6X XXX XXXX"></label>
+      <label class="f" id="emailWrap">Email (për kopjen e kontratës · for your copy)<input id="cm" type="email" autocomplete="email" inputmode="email"></label>
     </div>
   </div>
 
@@ -321,7 +322,10 @@ const CO = {
   email: "",                         // p.sh. "info@perfectcarrentaltirana.com" (opsionale)
   ig: "perfect_car_rental_tirana",
   web: "perfectcarrentaltirana.com",
-  pastrimi: 10                       // € për makinë të pa larë
+  pastrimi: 10,                      // € për makinë të pa larë
+  // Linku i Google Apps Script (Deploy → Web app). Bosh = pa ruajtje automatike.
+  api: "",
+  key: "pcr-2026-kontrata"           // i njëjtë me KEY te Code.gs
 };
 /* ========================================================= */
 
@@ -411,6 +415,14 @@ function drawDmg(){ $("dmgWrap").innerHTML = carSVG(marks, true); $("dmgCount").
 const packMarks = a => a.map(p => p.join(",")).join(";");
 const unpackMarks = s => (s || "").split(";").filter(Boolean).map(p => p.split(",").map(Number)).filter(p => p.length === 2 && p.every(isFinite));
 
+/* ---------- Google Apps Script ---------- */
+async function api(obj, get){
+  const r = get ? await fetch(CO.api + "?" + new URLSearchParams(obj)) :
+    await fetch(CO.api, { method: "POST", body: JSON.stringify({ key: CO.key, ...obj }) });
+  return r.json();
+}
+const blobB64 = b => new Promise((res, rej) => { const f = new FileReader(); f.onload = () => res(String(f.result).split(",")[1]); f.onerror = rej; f.readAsDataURL(b); });
+
 /* ======================= STAFF ======================= */
 let D = null;            // rental data (from staff or link)
 const C = { idF:null, idB:null, lic:null, cars:[] };   // client data
@@ -442,7 +454,17 @@ function initStaff(){
   ["dm","dd"].forEach(id => $(id).addEventListener("input", showDays));
   drawDmg(); $("dmgClr").onclick = () => { marks = []; drawDmg(); saveStaff(); };
   $("tg").addEventListener("input", e => e.target.value = e.target.value.toUpperCase());
-  $("mkLink").onclick = () => { const d = collect(); if (!d) return; const url = location.origin + location.pathname + "?k=" + enc(d);
+  if (CO.api) $("modeHint").innerHTML = "<b>Plotëso këtu:</b> klienti plotëson në këtë pajisje.<br><b>Linku:</b> klienti plotëson në telefonin e vet. Fotot e makinës ngarkohen në Google Drive dhe dalin në kontratën e tij.<br>Në të dyja rastet, kur klienti firmos, kontrata ruhet në Drive dhe të vjen me email.";
+  $("mkLink").onclick = async () => { const d = collect(); if (!d) return;
+    if (CO.api && staffCars.length) {
+      const btn = $("mkLink"), t0 = btn.textContent; btn.disabled = true; btn.textContent = "Duke ngarkuar fotot…";
+      try { const tok = d.s.replace(/\D/g, "") + Math.random().toString(36).slice(2, 10);
+        const r = await api({ action: "photos", token: tok, photos: staffCars }); if (!r.ok) throw new Error(r.error);
+        d.ph = tok; $("smsg").textContent = "";
+      } catch(e) { $("smsg").textContent = "Fotot nuk u ngarkuan (kontrollo internetin). Linku krijohet pa foto."; }
+      finally { btn.disabled = false; btn.textContent = t0; }
+    }
+    const url = location.origin + location.pathname + "?k=" + enc(d);
     $("linkTxt").textContent = url; $("serOut").textContent = d.s; $("linkOut").classList.remove("hidden");
     const txt = `Përshëndetje! Ju lutem plotësoni dhe firmosni kontratën e qirasë për ${d.mk} ${d.md} (${d.tg}): ${url}`;
     $("sendWa").href = "https://wa.me/?text=" + encodeURIComponent(txt);
@@ -480,6 +502,12 @@ function initClient(){
   if (D.dp) items.push(["Depozita · Deposit", D.dp + " €"]);
   $("sum").innerHTML = items.map(([a,b]) => `<div><small>${esc(a)}</small><b>${esc(b)}</b></div>`).join("");
   restoreClient();
+  if (!CO.api) $("emailWrap").classList.add("hidden");
+  if (D.ph && CO.api && !C.cars.length) {
+    photosState = "loading";
+    api({ action: "photos", t: D.ph }, true).then(r => { if (r.ok && r.photos.length) { C.cars = r.photos; C.fromStaff = true; } photosState = "done"; })
+      .catch(() => { photosState = "done"; });
+  }
   $("client").addEventListener("input", saveClient);
   document.querySelectorAll("input[data-k]").forEach(inp => inp.addEventListener("change", async e => {
     const f = e.target.files[0]; if (!f) return; const k = e.target.dataset.k; C[k] = await loadImg(f);
@@ -488,14 +516,18 @@ function initClient(){
   $("gen").onclick = review;
 }
 const CKEY = () => "pcr_c_" + D.s;
-function saveClient(){ const o = { ce:$("ce").value, ci:$("ci").value, cp:$("cp").value, ct:$("ct").value, idF:C.idF, idB:C.idB, lic:C.lic };
+function saveClient(){ const o = { ce:$("ce").value, ci:$("ci").value, cp:$("cp").value, ct:$("ct").value, cm:$("cm").value, idF:C.idF, idB:C.idB, lic:C.lic };
   try { sessionStorage.setItem(CKEY(), JSON.stringify(o)); } catch(e) { try { sessionStorage.setItem(CKEY(), JSON.stringify(o)); } catch(e2) {} } }
 function restoreClient(){ let o; try { o = JSON.parse(sessionStorage.getItem(CKEY()) || "null"); } catch(e) {} if (!o) return;
-  ["ce","ci","cp","ct"].forEach(id => $(id).value = o[id] || "");
+  ["ce","ci","cp","ct","cm"].forEach(id => $(id).value = o[id] || "");
   ["idF","idB","lic"].forEach(k => { if (!o[k]) return; C[k] = o[k]; const box = $("pb_"+k); box.classList.add("has"); const im = document.createElement("img"); im.src = o[k]; box.appendChild(im); });
 }
 
-function review(){
+let photosState = "done";
+async function review(){
+  if (photosState === "loading") { $("gen").disabled = true; $("cmsg").style.color = "var(--muted)"; $("cmsg").textContent = "Duke ngarkuar fotot e makinës…";
+    while (photosState === "loading") await new Promise(r => setTimeout(r, 300));
+    $("gen").disabled = false; $("cmsg").style.color = ""; $("cmsg").textContent = ""; }
   const req = ["ce","ci","cp","ct"]; let bad = false;
   req.forEach(id => { const b = !$(id).value.trim(); $(id).classList.toggle("bad", b); bad = bad || b; });
   const fail = m => { $("cmsg").textContent = m; };
@@ -504,7 +536,7 @@ function review(){
   if (!C.idB) return fail("Fotografoni ID-në nga mbrapa. · Please photograph the back of your ID.");
   if (!C.lic) return fail("Fotografoni patentën. · Please photograph your driving licence.");
   $("cmsg").textContent = "";
-  C.emri = $("ce").value.trim(); C.id = $("ci").value.trim(); C.pat = $("cp").value.trim(); C.tel = $("ct").value.trim();
+  C.emri = $("ce").value.trim(); C.id = $("ci").value.trim(); C.pat = $("cp").value.trim(); C.tel = $("ct").value.trim(); C.email = $("cm").value.trim();
   C.sig = null; C.time = null; pdfBlob = null;
   $("doc").innerHTML = renderDoc(D, C);
   $("view").classList.remove("signed"); $("agreeBox").classList.remove("hidden"); $("signArea").classList.add("hidden"); $("amsg").textContent = "";
@@ -527,7 +559,23 @@ $("signBtn").onclick = () => {
   $("agreeBox").classList.add("hidden"); $("view").classList.add("signed");
   $("vmsg").style.color = ""; $("vmsg").textContent = "✓ Kontrata u firmos. Shtypni “Dërgo kontratën” lart. · Signed! Press “Send” above.";
   window.scrollTo(0,0); fit(); setTimeout(fit, 300);
+  if (CO.api) autoSend();
 };
+async function autoSend(){
+  if (C.uploaded) return;
+  $("vmsg").style.color = "var(--muted)"; $("vmsg").textContent = "Duke ruajtur dhe dërguar kontratën… · Sending…";
+  try {
+    const blob = await makePdf(), b64 = await blobB64(blob);
+    const r = await api({ action: "contract", pdf: b64, filename: document.title + ".pdf", serial: D.s, name: C.emri, phone: C.tel, email: C.email,
+      car: `${D.mk} ${D.md}`, plate: D.tg, period: `${fmtD(D.dm)} ${D.om || ""} – ${fmtD(D.dd)} ${D.od || ""}` });
+    if (!r.ok) throw new Error(r.error);
+    C.uploaded = true; $("vmsg").style.color = "";
+    $("vmsg").textContent = "✓ Kontrata u firmos dhe u dërgua te Perfect Car Rental" + (C.email ? " dhe në email-in tuaj." : ".") + " · Contract signed and sent.";
+  } catch(e) {
+    $("vmsg").style.color = "var(--err)";
+    $("vmsg").textContent = "Kontrata u firmos, por nuk u dërgua automatikisht (interneti?). Shtypni “Dërgo kontratën”. · Please press “Send”.";
+  }
+}
 
 /* ======================= DOCUMENT ======================= */
 function renderDoc(d, c){
@@ -637,7 +685,7 @@ $("send").onclick = () => busy($("send"), async () => {
 });
 $("dl").onclick = () => busy($("dl"), async () => download(await makePdf()));
 $("prt").onclick = () => { try { window.print(); } catch(e) {} };
-$("back").onclick = () => { pdfBlob = null; C.sig = null; $("view").classList.remove("signed"); $("view").classList.add("hidden"); $("client").classList.remove("hidden"); document.title = "Perfect Car Rental · Autorizim"; };
+$("back").onclick = () => { pdfBlob = null; C.sig = null; C.uploaded = false; $("view").classList.remove("signed"); $("view").classList.add("hidden"); $("client").classList.remove("hidden"); document.title = "Perfect Car Rental · Autorizim"; };
 
 /* ---------- start ---------- */
 const k = new URLSearchParams(location.search).get("k");
