@@ -27,28 +27,29 @@ Del ikona **Perfect Car** si aplikacion.
 
 ### Stafi (ti)
 1. Hap aplikacionin. Faqja kryesore është **paneli i stafit**.
-2. Plotëso makinën: marka, modeli, ngjyra, targa dhe KM.
-3. Plotëso datat dhe oraret e marrjes dhe të kthimit.
-4. Shëno pajisjet, sigurimin (Full Kasko ose Simple) dhe territorin.
-5. Te **Dëmtimet ekzistuese** prek mbi skemën e makinës aty ku ka gërvishtje.
-6. Shëno depozitën, karburantin dhe komentet.
-7. **Firma e kompanisë** bëhet vetëm herën e parë. Ruhet në telefon.
-8. Zgjidh njërën nga këto:
-   - **"Krijo linkun për klientin"**, pastaj **"Dërgo me WhatsApp"**: klienti e plotëson në telefonin e vet.
-   - **"Plotëso këtu (në tablet)"**: klienti e plotëson në pajisjen tënde, në zyrë.
+2. Plotëso makinën, datat, pajisjet, sigurimin, territorin, depozitën dhe karburantin.
+3. Te **Dëmtimet ekzistuese** prek mbi skemën e makinës aty ku ka gërvishtje.
+4. **Fotot e makinës:** shtyp "+ Shto foto" dhe fotografo makinën nga të gjitha anët. Fotot i bën **vetëm stafi**.
+5. **Firma e kompanisë** bëhet vetëm herën e parë. Ruhet në telefon.
+6. Shtyp **"Plotëso këtu"** dhe jepi telefonin ose tabletin klientit. *(Kjo është mënyra kryesore.)*
+   - Ka edhe mundësinë **"Krijo linkun"** për klientin, por kështu kontrata vjen **pa fotot e makinës**, sepse fotot nuk kalojnë dot me link pa server.
+7. Pas çdo kontrate shtyp **"Pastro formularin"** për të filluar kontratën tjetër.
+
+> Nëse faqja rifreskohet (p.sh. pas kamerës), të dhënat nuk humbin, sepse ruhen automatikisht.
 
 ### Klienti
-1. Hap linkun.
-2. Shkruan emrin, nr. e ID-së ose pasaportës, nr. e patentës dhe telefonin.
-3. Fotografon ID-në ose pasaportën dhe patentën.
-4. Fotografon makinën nga të gjitha anët.
-5. Firmos me gisht dhe pranon kushtet.
-6. Shtyp **"Shiko kontratën"**, pastaj **"Dërgo kontratën"**, zgjedh WhatsApp dhe ia dërgon Perfect Car Rental.
+1. Shkruan emrin, nr. e ID-së ose pasaportës, nr. e patentës dhe telefonin.
+2. Fotografon **ID-në përpara dhe mbrapa** dhe **patentën**.
+3. Shtyp **"Vazhdo: shiko kontratën"** dhe lexon kontratën.
+4. Në fund del pyetja **"A jeni dakord me kontratën?"**. Shtyp **PO**.
+5. Firmos me gisht dhe shtyp **"Firmos kontratën"**.
+6. Shtyp **"Dërgo kontratën"**, zgjedh WhatsApp dhe ia dërgon Perfect Car Rental. Mund edhe ta shkarkojë ose ta printojë.
 
-### Pas kësaj
-- PDF-ja të vjen në WhatsApp: **faqja 1** është kontrata e firmosur, **faqja 2** janë fotot e dokumenteve dhe të makinës.
-- Ruaje në një dosje, p.sh. në Google Drive, dosja *Kontratat 2026*.
-- Mund ta printosh direkt nga telefoni ose kompjuteri.
+### PDF-ja
+- Emri i skedarit: **Emri_Mbiemri_DD-MM-VVVV.pdf**, p.sh. `Ervis_Mydini_20-11-2026.pdf`.
+- **Faqja 1:** kontrata e plotë me firmat.
+- **Faqja 2:** ID përpara dhe mbrapa, patenta, dhe poshtë tyre fotot e makinës.
+- Ruaji në një dosje, p.sh. në Google Drive, dosja *Kontratat 2026*.
 
 ## 4. Ndryshimet
 

@@ -64,6 +64,9 @@ canvas.sig{width:100%;height:190px;display:block;touch-action:none}
 .check input{width:24px;height:24px;margin:1px 0 0;flex:none}
 .linkbox{word-break:break-all;background:var(--bg);border-radius:10px;padding:10px 12px;font-size:13px;margin-top:10px}
 .hidden{display:none!important}
+.agreebox{max-width:760px;margin:16px auto 60px;border:2px solid var(--acc)}
+#view:not(.signed) .signed-only{display:none}
+@media(max-width:780px){.agreebox{margin:16px 8px 60px}}
 .dmgwrap{max-width:520px;margin:0 auto;border:1px solid var(--line);border-radius:12px;background:#fff;padding:6px}
 .dmgwrap svg{width:100%;height:auto;display:block;touch-action:manipulation;cursor:crosshair}
 .stickybar{position:sticky;top:0;z-index:5;background:#0d0d0d;border-bottom:3px solid var(--acc);padding:10px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
@@ -116,7 +119,7 @@ canvas.sig{width:100%;height:190px;display:block;touch-action:none}
 
 @media print{
   body{background:#fff}
-  header.top,main,.stickybar{display:none!important}
+  header.top,main,.stickybar,.agreebox,#vmsg{display:none!important}
   .scaler{transform:none!important;margin:0}
   .docouter{height:auto!important;overflow:visible;width:auto!important}
   #doc{box-shadow:none;padding:0;width:100%}
@@ -193,6 +196,13 @@ canvas.sig{width:100%;height:190px;display:block;touch-action:none}
   </div>
 
   <div class="card">
+    <h2>Fotot e makinës</h2>
+    <p class="hint">Bëj foto nga të gjitha anët: para, mbrapa, majtas, djathtas, brenda dhe paneli (km + karburant). Deri në 10 foto.</p>
+    <label class="photo-btn"><b>+ Shto foto</b>Hap kamerën<input type="file" accept="image/*" capture="environment" multiple id="sCarIn"></label>
+    <div class="thumbs" id="sCarThumbs"></div>
+  </div>
+
+  <div class="card">
     <h2>Depozita dhe karburanti</h2>
     <div class="grid">
       <label class="f">Depozita e garancisë (€)<input id="dep" type="number" min="0" inputmode="decimal"></label>
@@ -219,8 +229,10 @@ canvas.sig{width:100%;height:190px;display:block;touch-action:none}
     <h2>Gati</h2>
     <div class="row">
       <button class="btn wa" type="button" id="mkLink">Krijo linkun për klientin</button>
-      <button class="btn" type="button" id="here">Plotëso këtu (në tablet)</button>
+      <button class="btn main" type="button" id="here">Plotëso këtu (në tablet)</button>
     </div>
+    <p class="hint" style="margin:10px 0 0"><b>Plotëso këtu:</b> klienti plotëson në këtë pajisje dhe fotot e makinës që bëre hyjnë në kontratë.<br><b>Linku:</b> klienti plotëson në telefonin e vet. Fotot e makinës nuk kalojnë dot me link, prandaj kontrata e klientit vjen pa to. Fotot i ke ti në telefon. Për kontratë të plotë me foto përdor “Plotëso këtu”.</p>
+    <div class="row"><button class="btn" type="button" id="clearStaff">Pastro formularin (kontratë e re)</button></div>
     <div class="msg" id="smsg"></div>
     <div id="linkOut" class="hidden">
       <div class="linkbox" id="linkTxt"></div>
@@ -237,7 +249,7 @@ canvas.sig{width:100%;height:190px;display:block;touch-action:none}
 <main id="client" class="hidden">
   <div class="card">
     <h2>Mirë se vini!</h2>
-    <p class="hint">Plotësoni 4 hapa të shkurtër dhe kontrata është gati. Welcome! Complete 4 short steps to sign your rental agreement.</p>
+    <p class="hint">Plotësoni të dhënat, shikoni kontratën, pranojeni dhe firmosni. · Fill in your details, review the contract, accept and sign.</p>
     <div class="summary" id="sum"></div>
   </div>
 
@@ -256,40 +268,42 @@ canvas.sig{width:100%;height:190px;display:block;touch-action:none}
     <p class="hint">Shtypni katrorin dhe fotografoni dokumentin. Tap a box and take a photo.</p>
     <div class="grid">
       <label class="photo-btn" id="pb_idF"><b>ID / Pasaportë – përpara *</b>ID / Passport – front<input type="file" accept="image/*" capture="environment" data-k="idF"></label>
-      <label class="photo-btn" id="pb_idB"><b>ID – mbrapa</b>ID – back<input type="file" accept="image/*" capture="environment" data-k="idB"></label>
+      <label class="photo-btn" id="pb_idB"><b>ID – mbrapa *</b>ID – back<input type="file" accept="image/*" capture="environment" data-k="idB"></label>
       <label class="photo-btn" id="pb_lic"><b>Patenta *</b>Driving licence<input type="file" accept="image/*" capture="environment" data-k="lic"></label>
     </div>
   </div>
 
-  <div class="card">
-    <h2><span class="step">3</span>Fotot e makinës · Car photos</h2>
-    <p class="hint">Fotografoni makinën nga të gjitha anët kur e merrni (deri në 8 foto). Photograph the car from all sides at pickup.</p>
-    <label class="photo-btn"><b>+ Shto foto</b>Add photos<input type="file" accept="image/*" capture="environment" multiple id="carIn"></label>
-    <div class="thumbs" id="carThumbs"></div>
-  </div>
-
-  <div class="card">
-    <h2><span class="step">4</span>Firma · Signature</h2>
-    <p class="hint">Firmosni me gisht në kutinë më poshtë. Sign with your finger.</p>
-    <div class="sigwrap"><canvas class="sig" id="sigK"></canvas><span>Firmo këtu · Sign here</span></div>
-    <div class="row"><button class="btn" type="button" id="clrK">Fshi · Clear</button></div>
-    <label class="check" style="margin-top:16px"><input type="checkbox" id="agree"><span>Konfirmoj që të dhënat janë të sakta, pranoj kushtet e këtij autorizimi dhe përpunimin e të dhënave të mia personale nga Perfect Car Rental për qëllim të kësaj qiraje. <i style="color:var(--muted)">I confirm the data is correct and accept the terms and the processing of my personal data for this rental.</i></span></label>
-  </div>
-
-  <button class="btn main full" type="button" id="gen" style="min-height:56px;font-size:18px">Shiko kontratën · Review contract</button>
+  <button class="btn main full" type="button" id="gen" style="min-height:56px;font-size:18px">Vazhdo: shiko kontratën · Continue</button>
   <div class="msg" id="cmsg"></div>
 </main>
 
 <!-- =================== KONTRATA =================== -->
 <div id="view" class="hidden">
   <div class="stickybar">
-    <button class="btn wa" type="button" id="send">Dërgo kontratën · Send</button>
-    <button class="btn" type="button" id="dl">Shkarko PDF</button>
-    <button class="btn" type="button" id="prt">Printo</button>
+    <button class="btn wa signed-only" type="button" id="send">Dërgo kontratën · Send</button>
+    <button class="btn signed-only" type="button" id="dl">Shkarko PDF</button>
+    <button class="btn signed-only" type="button" id="prt">Printo</button>
     <button class="btn" type="button" id="back">← Ndrysho</button>
   </div>
   <p class="okmsg" id="vmsg" style="text-align:center;margin:10px 12px 0"></p>
   <div class="docouter" id="docouter"><div class="scaler" id="scaler"><div id="doc"></div></div></div>
+  <div class="card agreebox" id="agreeBox">
+    <h2>A jeni dakord me kontratën? · Do you agree with the contract?</h2>
+    <p class="hint">Duke shtypur PO, konfirmoj që të dhënat janë të sakta, pranoj kushtet e kontratës dhe përpunimin e të dhënave të mia personale nga Perfect Car Rental për këtë qira. <i>By pressing YES I confirm the data is correct and accept the contract and the processing of my personal data for this rental.</i></p>
+    <div class="row">
+      <button class="btn main" type="button" id="yes" style="min-height:56px;font-size:18px;flex:1">PO, jam dakord · YES</button>
+      <button class="btn" type="button" id="no" style="min-height:56px">JO · NO</button>
+    </div>
+    <div id="signArea" class="hidden">
+      <h2 style="margin-top:18px">Firmosni me gisht · Sign with your finger</h2>
+      <div class="sigwrap"><canvas class="sig" id="sigK"></canvas><span>Firmo këtu · Sign here</span></div>
+      <div class="row">
+        <button class="btn" type="button" id="clrK">Fshi · Clear</button>
+        <button class="btn main" type="button" id="signBtn" style="flex:1">Firmos kontratën · Sign</button>
+      </div>
+    </div>
+    <div class="msg" id="amsg"></div>
+  </div>
 </div>
 
 <script src="assets/html2pdf.bundle.min.js"></script>
@@ -391,26 +405,42 @@ function carSVG(marks, interactive){
 let marks = [];
 function drawDmg(){ $("dmgWrap").innerHTML = carSVG(marks, true); $("dmgCount").textContent = marks.length ? `${marks.length} shenja` : "Asnjë dëmtim i shënuar";
   $("dmgSvg").addEventListener("click", e => {
-    const g = e.target.closest("[data-m]"); if (g) { marks.splice(+g.dataset.m, 1); drawDmg(); return; }
+    const g = e.target.closest("[data-m]"); if (g) { marks.splice(+g.dataset.m, 1); drawDmg(); saveStaff(); return; }
     const svg = $("dmgSvg"), pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
-    const p = pt.matrixTransform(svg.getScreenCTM().inverse()); marks.push([Math.round(p.x), Math.round(p.y)]); drawDmg(); }); }
+    const p = pt.matrixTransform(svg.getScreenCTM().inverse()); marks.push([Math.round(p.x), Math.round(p.y)]); drawDmg(); if ($("staff") && !$("staff").classList.contains("hidden")) saveStaff(); }); }
 const packMarks = a => a.map(p => p.join(",")).join(";");
 const unpackMarks = s => (s || "").split(";").filter(Boolean).map(p => p.split(",").map(Number)).filter(p => p.length === 2 && p.every(isFinite));
 
 /* ======================= STAFF ======================= */
 let D = null;            // rental data (from staff or link)
 const C = { idF:null, idB:null, lic:null, cars:[] };   // client data
-let padC, padK;
+let padC, padK = null, staffCars = [], curSerial = null;
+const STAFF_FIELDS = ["mk","md","ng","tg","kmi","kmo","dm","om","dd","od","dep","kt","kom","eq0","eq1","eq2","eq3","t0","t1","t2","t3"];
+function saveStaff(){ const o = { f:{}, r:{}, marks, cars: staffCars, s: curSerial };
+  STAFF_FIELDS.forEach(id => { const el = $(id); o.f[id] = el.type === "checkbox" ? el.checked : el.value; });
+  ["ws","ins","kl"].forEach(n => { const c = document.querySelector(`input[name=${n}]:checked`); o.r[n] = c ? c.value : ""; });
+  try { localStorage.setItem("pcr_staff", JSON.stringify(o)); } catch(e) { o.cars = []; try { localStorage.setItem("pcr_staff", JSON.stringify(o)); } catch(e2) {} } }
+function loadStaff(){ let o; try { o = JSON.parse(localStorage.getItem("pcr_staff") || "null"); } catch(e) {} if (!o) return false;
+  STAFF_FIELDS.forEach(id => { const el = $(id); if (!(id in o.f)) return; if (el.type === "checkbox") el.checked = o.f[id]; else el.value = o.f[id]; });
+  Object.entries(o.r || {}).forEach(([n,v]) => { const el = document.querySelector(`input[name=${n}][value="${v}"]`); if (el) el.checked = true; });
+  marks = o.marks || []; staffCars = o.cars || []; curSerial = o.s || null; return true; }
+function drawStaffCars(){ $("sCarThumbs").innerHTML = staffCars.map((s,i) => `<div><img src="${s}" alt="Foto ${i+1}"><button type="button" data-si="${i}" aria-label="Hiq">×</button></div>`).join(""); }
 
 function initStaff(){
   $("staff").classList.remove("hidden"); $("who").textContent = "Paneli i stafit";
-  const t = new Date(); $("dm").value = `${t.getFullYear()}-${pad(t.getMonth()+1)}-${pad(t.getDate())}`;
-  $("om").value = `${pad(t.getHours())}:${pad(t.getMinutes())}`;
+  const restored = loadStaff();
+  if (!restored) { const t = new Date(); $("dm").value = `${t.getFullYear()}-${pad(t.getMonth()+1)}-${pad(t.getDate())}`;
+    $("om").value = `${pad(t.getHours())}:${pad(t.getMinutes())}`; }
+  showDays(); drawStaffCars();
+  $("staff").addEventListener("input", saveStaff); $("staff").addEventListener("change", saveStaff);
+  $("sCarIn").addEventListener("change", async e => { for (const f of e.target.files) { if (staffCars.length >= 10) break; staffCars.push(await loadImg(f, 1100, .75)); } e.target.value = ""; drawStaffCars(); saveStaff(); });
+  $("sCarThumbs").addEventListener("click", e => { const i = e.target.dataset.si; if (i !== undefined) { staffCars.splice(+i, 1); drawStaffCars(); saveStaff(); } });
+  $("clearStaff").onclick = () => { try { localStorage.removeItem("pcr_staff"); } catch(e) {} location.href = location.pathname; };
   padC = makePad($("sigC"), () => { const s = padC.small(); if (s) { LS.set("pcr_sig", s); $("sigCsaved").textContent = "Firma u ruajt ✓"; } });
   const saved = LS.get("pcr_sig"); if (saved) { padC.load(saved); $("sigCsaved").textContent = "Firma e ruajtur ✓"; }
   $("clrC").onclick = () => { padC.clear(); LS.set("pcr_sig", ""); $("sigCsaved").textContent = ""; };
   ["dm","dd"].forEach(id => $(id).addEventListener("input", showDays));
-  drawDmg(); $("dmgClr").onclick = () => { marks = []; drawDmg(); };
+  drawDmg(); $("dmgClr").onclick = () => { marks = []; drawDmg(); saveStaff(); };
   $("tg").addEventListener("input", e => e.target.value = e.target.value.toUpperCase());
   $("mkLink").onclick = () => { const d = collect(); if (!d) return; const url = location.origin + location.pathname + "?k=" + enc(d);
     $("linkTxt").textContent = url; $("serOut").textContent = d.s; $("linkOut").classList.remove("hidden");
@@ -418,7 +448,9 @@ function initStaff(){
     $("sendWa").href = "https://wa.me/?text=" + encodeURIComponent(txt);
     $("copy").onclick = async () => { try { await navigator.clipboard.writeText(url); $("copy").textContent = "U kopjua ✓"; } catch(e) { $("copy").textContent = "Kopjoje me dorë"; } };
   };
-  $("here").onclick = () => { const d = collect(); if (!d) return; D = d; $("staff").classList.add("hidden"); initClient(); window.scrollTo(0,0); };
+  $("here").onclick = () => { if (!staffCars.length) { $("smsg").textContent = "Bëj të paktën një foto të makinës para se t'ia japësh klientit."; return; }
+    const d = collect(); if (!d) return; D = d; C.cars = staffCars.slice(); C.fromStaff = staffCars.length > 0;
+    $("staff").classList.add("hidden"); initClient(); window.scrollTo(0,0); };
 }
 function days(a, b){ if (!a || !b) return 0; const n = Math.round((new Date(b) - new Date(a)) / 86400000); return n > 0 ? n : 0; }
 function showDays(){ const n = days($("dm").value, $("dd").value); $("ditet").textContent = n ? `${n} ditë` : ""; }
@@ -432,7 +464,8 @@ function collect(){
   $("smsg").textContent = "";
   const r = n => (document.querySelector(`input[name=${n}]:checked`) || {}).value || "";
   const fl = p => [0,1,2,3].map(i => $(p+i).checked ? 1 : 0).join("");
-  return { s: nextSerial(), mk: $("mk").value.trim(), md: $("md").value.trim(), ng: $("ng").value.trim(), tg: $("tg").value.trim(),
+  if (!curSerial) { curSerial = nextSerial(); saveStaff(); }
+  return { s: curSerial, mk: $("mk").value.trim(), md: $("md").value.trim(), ng: $("ng").value.trim(), tg: $("tg").value.trim(),
     ki: $("kmi").value.trim(), ko: $("kmo").value.trim(), ws: r("ws"), dm: $("dm").value, om: $("om").value, dd: $("dd").value, od: $("od").value,
     eq: fl("eq"), in: r("ins"), te: fl("t"), dp: $("dep").value.trim(), kt: $("kt").value, kl: r("kl"), ko2: $("kom").value.trim(), dg: packMarks(marks),
     fs: padC.isEmpty() ? "" : (padC.small() || LS.get("pcr_sig") || "") };
@@ -446,17 +479,21 @@ function initClient(){
     ["Kthimi · Drop off", `${fmtD(D.dd)} ${D.od || ""}`], ["Kohëzgjatja · Days", `${n} ditë`]];
   if (D.dp) items.push(["Depozita · Deposit", D.dp + " €"]);
   $("sum").innerHTML = items.map(([a,b]) => `<div><small>${esc(a)}</small><b>${esc(b)}</b></div>`).join("");
-  padK = makePad($("sigK"));
-  $("clrK").onclick = () => padK.clear();
+  restoreClient();
+  $("client").addEventListener("input", saveClient);
   document.querySelectorAll("input[data-k]").forEach(inp => inp.addEventListener("change", async e => {
     const f = e.target.files[0]; if (!f) return; const k = e.target.dataset.k; C[k] = await loadImg(f);
-    const box = $("pb_"+k); box.classList.add("has"); let im = box.querySelector("img"); if (!im) { im = document.createElement("img"); box.appendChild(im); } im.src = C[k];
+    const box = $("pb_"+k); box.classList.add("has"); let im = box.querySelector("img"); if (!im) { im = document.createElement("img"); box.appendChild(im); } im.src = C[k]; saveClient();
   }));
-  $("carIn").addEventListener("change", async e => { for (const f of e.target.files) { if (C.cars.length >= 8) break; C.cars.push(await loadImg(f, 1100, .78)); } e.target.value = ""; drawCars(); });
-  $("carThumbs").addEventListener("click", e => { const i = e.target.dataset.i; if (i !== undefined) { C.cars.splice(+i, 1); drawCars(); } });
   $("gen").onclick = review;
 }
-function drawCars(){ $("carThumbs").innerHTML = C.cars.map((s,i) => `<div><img src="${s}" alt="Foto ${i+1}"><button type="button" data-i="${i}" aria-label="Hiq">×</button></div>`).join(""); }
+const CKEY = () => "pcr_c_" + D.s;
+function saveClient(){ const o = { ce:$("ce").value, ci:$("ci").value, cp:$("cp").value, ct:$("ct").value, idF:C.idF, idB:C.idB, lic:C.lic };
+  try { sessionStorage.setItem(CKEY(), JSON.stringify(o)); } catch(e) { try { sessionStorage.setItem(CKEY(), JSON.stringify(o)); } catch(e2) {} } }
+function restoreClient(){ let o; try { o = JSON.parse(sessionStorage.getItem(CKEY()) || "null"); } catch(e) {} if (!o) return;
+  ["ce","ci","cp","ct"].forEach(id => $(id).value = o[id] || "");
+  ["idF","idB","lic"].forEach(k => { if (!o[k]) return; C[k] = o[k]; const box = $("pb_"+k); box.classList.add("has"); const im = document.createElement("img"); im.src = o[k]; box.appendChild(im); });
+}
 
 function review(){
   const req = ["ce","ci","cp","ct"]; let bad = false;
@@ -464,24 +501,40 @@ function review(){
   const fail = m => { $("cmsg").textContent = m; };
   if (bad) return fail("Plotësoni fushat e shënuara me të kuqe. · Please fill the fields in red.");
   if (!C.idF) return fail("Fotografoni ID-në ose pasaportën. · Please photograph your ID / passport.");
+  if (!C.idB) return fail("Fotografoni ID-në nga mbrapa. · Please photograph the back of your ID.");
   if (!C.lic) return fail("Fotografoni patentën. · Please photograph your driving licence.");
-  if (padK.isEmpty()) return fail("Mungon firma. · Signature is missing.");
-  if (!$("agree").checked) return fail("Konfirmoni kushtet. · Please accept the terms.");
   $("cmsg").textContent = "";
   C.emri = $("ce").value.trim(); C.id = $("ci").value.trim(); C.pat = $("cp").value.trim(); C.tel = $("ct").value.trim();
-  C.sig = padK.full(); C.time = new Date();
+  C.sig = null; C.time = null; pdfBlob = null;
   $("doc").innerHTML = renderDoc(D, C);
+  $("view").classList.remove("signed"); $("agreeBox").classList.remove("hidden"); $("signArea").classList.add("hidden"); $("amsg").textContent = "";
+  $("vmsg").style.color = ""; $("vmsg").textContent = "Lexoni kontratën dhe në fund shtypni PO për ta firmosur. · Read the contract, then press YES below.";
   $("client").classList.add("hidden"); $("view").classList.remove("hidden"); window.scrollTo(0,0);
-  document.title = `Kontrata_${D.s}_${D.tg.replace(/\s+/g,"")}_${C.emri.replace(/\s+/g,"_")}`;
+  setTitle();
   fit(); setTimeout(fit, 300);
 }
+function setTitle(){ const t = C.time || new Date();
+  const name = C.emri.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Za-z0-9]+/g, "_").replace(/^_|_$/g, "") || "Klienti";
+  document.title = `${name}_${pad(t.getDate())}-${pad(t.getMonth()+1)}-${t.getFullYear()}`; }
+$("yes").onclick = () => { $("signArea").classList.remove("hidden"); $("yes").textContent = "✓ Jeni dakord · Agreed";
+  if (!padK) { padK = makePad($("sigK")); $("clrK").onclick = () => padK.clear(); }
+  $("signArea").scrollIntoView({ behavior: "smooth", block: "center" }); };
+$("no").onclick = () => $("back").click();
+$("signBtn").onclick = () => {
+  if (!padK || padK.isEmpty()) { $("amsg").textContent = "Mungon firma. · Signature is missing."; return; }
+  $("amsg").textContent = ""; C.sig = padK.full(); C.time = new Date(); pdfBlob = null;
+  $("doc").innerHTML = renderDoc(D, C); setTitle();
+  $("agreeBox").classList.add("hidden"); $("view").classList.add("signed");
+  $("vmsg").style.color = ""; $("vmsg").textContent = "✓ Kontrata u firmos. Shtypni “Dërgo kontratën” lart. · Signed! Press “Send” above.";
+  window.scrollTo(0,0); fit(); setTimeout(fit, 300);
+};
 
 /* ======================= DOCUMENT ======================= */
 function renderDoc(d, c){
   const cb = on => `<span class="cb${on ? " on" : ""}"></span>`;
   const ln = (lbl, val) => `<div class="ln"><span>${lbl}</span><b>${esc(val)}</b></div>`;
   const eq = d.eq.split(""), te = d.te.split("");
-  const t = c.time, ts = `${pad(t.getDate())}/${pad(t.getMonth()+1)}/${t.getFullYear()} ${pad(t.getHours())}:${pad(t.getMinutes())}`;
+  const t = c.time || new Date(), ts = `${pad(t.getDate())}/${pad(t.getMonth()+1)}/${t.getFullYear()} ${pad(t.getHours())}:${pad(t.getMinutes())}`;
   const n = days(d.dm, d.dd);
   const photos = c.cars.map((s,i) => `<figure><img src="${s}"><figcaption>Foto ${i+1}</figcaption></figure>`).join("");
   return `
@@ -532,8 +585,8 @@ function renderDoc(d, c){
     <div class="b sigb"><div class="t">${esc(CO.emri)}</div>
       <div class="sigline">${d.fs ? `<img src="${d.fs}" alt="">` : ""}</div><div class="small">${esc(CO.perfaqesuesi)}</div></div>
     <div class="b sigb"><div class="t">Klienti / Client</div>
-      <div class="sigline"><img src="${c.sig}" alt="Firma"></div>
-      <div class="small">${esc(c.emri)} · Firmosur elektronikisht më ${ts}</div></div>
+      <div class="sigline">${c.sig ? `<img src="${c.sig}" alt="Firma">` : ""}</div>
+      <div class="small">${esc(c.emri)}${c.sig ? ` · Firmosur elektronikisht më ${ts}` : ""}</div></div>
   </div>
 
   <div class="pb"></div>
@@ -541,11 +594,11 @@ function renderDoc(d, c){
     <h3>Aneks 1 – Dokumentet e klientit / Customer documents</h3>
     <div class="ph">
       <figure><img src="${c.idF}"><figcaption>ID / Pasaportë – përpara</figcaption></figure>
-      ${c.idB ? `<figure><img src="${c.idB}"><figcaption>ID – mbrapa</figcaption></figure>` : ""}
+      <figure><img src="${c.idB}"><figcaption>ID / Pasaportë – mbrapa</figcaption></figure>
       <figure><img src="${c.lic}"><figcaption>Patenta / Driving licence</figcaption></figure>
     </div>
-    ${c.cars.length ? `<h3>Aneks 2 – Gjendja e automjetit në dorëzim / Vehicle condition (${esc(d.tg)})</h3><div class="ph">${photos}</div>` : ""}
-    <p class="small" style="margin-top:8px">Dokumenti u plotësua dhe u firmos elektronikisht më ${ts}. Serial nr. ${esc(d.s)}.</p>
+    ${c.cars.length ? `<h3>Aneks 2 – Gjendja e automjetit në dorëzim / Vehicle condition (${esc(d.tg)})${c.fromStaff ? " – foto nga stafi" : ""}</h3><div class="ph">${photos}</div>` : ""}
+    <p class="small" style="margin-top:8px">${c.sig ? `Dokumenti u plotësua dhe u firmos elektronikisht më ${ts}. ` : ""}Serial nr. ${esc(d.s)}.</p>
   </div>`;
 }
 
@@ -584,7 +637,7 @@ $("send").onclick = () => busy($("send"), async () => {
 });
 $("dl").onclick = () => busy($("dl"), async () => download(await makePdf()));
 $("prt").onclick = () => { try { window.print(); } catch(e) {} };
-$("back").onclick = () => { pdfBlob = null; $("view").classList.add("hidden"); $("client").classList.remove("hidden"); document.title = "Perfect Car Rental · Autorizim"; };
+$("back").onclick = () => { pdfBlob = null; C.sig = null; $("view").classList.remove("signed"); $("view").classList.add("hidden"); $("client").classList.remove("hidden"); document.title = "Perfect Car Rental · Autorizim"; };
 
 /* ---------- start ---------- */
 const k = new URLSearchParams(location.search).get("k");
