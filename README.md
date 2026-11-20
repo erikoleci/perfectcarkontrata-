@@ -82,7 +82,7 @@ Script-i punon në llogarinë tënde Google (mund të jetë email-i personal). E
 ### Vendosja (një herë, ~5 minuta)
 1. Hyr në **script.google.com** me email-in tënd dhe shtyp **New project**.
 2. Fshi gjithçka që është në editor dhe ngjit përmbajtjen e skedarit [`google-apps-script/Code.gs`](google-apps-script/Code.gs).
-3. Lart te `COMPANY_EMAIL` vendos email-in e Perfect Car Rental, ku do të vijnë kontratat.
+3. Email-et ku vijnë kontratat janë te `COMPANY_EMAILS` (tani: info@perfectcarrentaltirana.com dhe lomilomi727@gmail.com).
 4. Shtyp 💾 **Save**. Pastaj zgjidh funksionin **`provo`** dhe shtyp **▶ Run**.
    - Google kërkon leje. Shtyp **Review permissions**, zgjidh email-in tënd, pastaj **Advanced → Go to … (unsafe) → Allow**.
    - Kjo është normale për script-et që shkruan vetë. Script-i ka qasje vetëm në Drive dhe dërgim email-esh në llogarinë tënde.

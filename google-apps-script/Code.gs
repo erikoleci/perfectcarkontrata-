@@ -5,8 +5,10 @@
  * Ndrysho vetëm vlerat te CONFIG.
  */
 const CONFIG = {
-  // Email-i ku vjen çdo kontratë e firmosur (email-i i Perfect Car Rental)
-  COMPANY_EMAIL: "VENDOS_EMAILIN_E_PERFECT_CAR@gmail.com",
+  // Email-et ku vjen çdo kontratë e firmosur
+  COMPANY_EMAILS: ["info@perfectcarrentaltirana.com", "lomilomi727@gmail.com"],
+  // Kur klienti shtyp "Reply", përgjigjja shkon këtu
+  REPLY_TO: "info@perfectcarrentaltirana.com",
   // Emri që del si dërgues te email-et
   SENDER_NAME: "Perfect Car Rental",
   // Dosja kryesore në Google Drive
@@ -92,7 +94,7 @@ function doPost(e) {
       ].join("\n");
 
       MailApp.sendEmail({
-        to: CONFIG.COMPANY_EMAIL,
+        to: CONFIG.COMPANY_EMAILS.join(","),
         subject: "Kontratë e re " + (body.serial || "") + " – " + emri + " – " + (body.plate || ""),
         body: info,
         name: CONFIG.SENDER_NAME,
@@ -109,7 +111,7 @@ function doPost(e) {
                 "Hello " + emri + ",\nAttached is your rental agreement. Thank you for choosing Perfect Car Rental!\n\n" +
                 "Perfect Car Rental · +355 69 68 38 939 · perfectcarrentaltirana.com",
           name: CONFIG.SENDER_NAME,
-          replyTo: CONFIG.COMPANY_EMAIL,
+          replyTo: CONFIG.REPLY_TO,
           attachments: [pdf]
         });
       }
@@ -125,5 +127,5 @@ function doPost(e) {
 /* Ekzekutoje një herë nga editori (▶ Run) që Google të kërkojë lejet. */
 function provo() {
   root_();
-  Logger.log("Gati! Dosja: " + CONFIG.ROOT_FOLDER + " · Email: " + CONFIG.COMPANY_EMAIL);
+  Logger.log("Gati! Dosja: " + CONFIG.ROOT_FOLDER + " · Email: " + CONFIG.COMPANY_EMAILS.join(", "));
 }
