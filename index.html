@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0d0d0d">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Perfect Car">
+<title>Perfect Car Rental · Autorizim</title>
+<style>
+:root{--bg:#f2f2ef;--card:#fff;--ink:#121212;--muted:#5f6268;--line:#dcdcd6;--acc:#f5c400;--accd:#121212;--accs:#fff8d6;--err:#c62828;--ok:#1b7f3b}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;overflow-x:hidden}
+header.top{background:#0d0d0d;color:#fff;padding:12px max(4vw,16px);display:flex;align-items:center;gap:14px;border-bottom:3px solid var(--acc)}
+header.top img{height:46px;width:auto;display:block}
+.logo{font-weight:800;letter-spacing:.06em;font-style:italic;font-size:18px;line-height:1.1}
+.logo small{display:block;font-weight:400;font-style:normal;letter-spacing:0;font-size:12px;color:#aab1bf}
+header.top .who{margin-left:auto;font-size:13px;color:#aab1bf;text-align:right}
+main{max-width:820px;margin:0 auto;padding:18px 14px 90px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:14px}
+.card h2{margin:0 0 4px;font-size:18px}
+.card .hint{margin:0 0 12px;color:var(--muted);font-size:14px}
+.step{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--acc);color:#121212;font-weight:700;font-size:15px;margin-right:8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:12px}
+label.f{display:block;font-size:14px;color:var(--muted)}
+input,select,textarea{width:100%;font:inherit;font-size:16px;padding:11px 12px;border:1px solid var(--line);border-radius:9px;margin-top:4px;background:#fff;color:var(--ink)}
+input:focus,select:focus,textarea:focus{outline:2px solid #121212;outline-offset:1px}
+.bad{border-color:var(--err)!important;background:#fff5f5}
+.opts{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.opt{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:9px;padding:9px 12px;min-height:44px;cursor:pointer;background:#fff;font-size:15px}
+.opt input{width:20px;height:20px;margin:0}
+.opt:has(input:checked){border-color:#121212;background:var(--accs)}
+.opt input{accent-color:#121212}
+.check input{accent-color:#121212}
+.btn{font:inherit;font-size:16px;padding:12px 18px;min-height:48px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+.btn.main{background:var(--acc);color:#121212;border-color:var(--acc);font-weight:700}
+.btn.wa{background:#1fa855;border-color:#1fa855;color:#fff;font-weight:600}
+.btn:disabled{opacity:.6}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.full{width:100%}
+.msg{color:var(--err);font-weight:600;margin-top:10px}
+.okmsg{color:var(--ok);font-weight:600}
+.photo-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:2px dashed #b9c0cf;border-radius:12px;min-height:110px;padding:12px;text-align:center;cursor:pointer;background:#fafbfc;color:var(--muted);font-size:14px;position:relative;overflow:hidden}
+.photo-btn b{color:var(--ink);font-size:15px}
+.photo-btn input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.photo-btn img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.photo-btn.has{border-style:solid;border-color:var(--ok)}
+.thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.thumbs div{position:relative}
+.thumbs img{width:96px;height:72px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+.thumbs button{position:absolute;top:3px;right:3px;width:26px;height:26px;border-radius:50%;border:0;background:#000b;color:#fff;cursor:pointer;font-size:16px;line-height:1}
+.sigwrap{border:2px dashed #b9c0cf;border-radius:12px;background:#fff;touch-action:none;position:relative}
+.sigwrap span{position:absolute;left:14px;bottom:10px;color:#b9c0cf;font-size:14px;pointer-events:none}
+canvas.sig{width:100%;height:190px;display:block;touch-action:none}
+.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,140px),1fr));gap:8px}
+.summary div{background:var(--bg);border-radius:10px;padding:10px 12px}
+.summary small{display:block;color:var(--muted);font-size:13px}
+.summary b{font-size:16px}
+.check{display:flex;gap:12px;align-items:flex-start;font-size:15px;cursor:pointer}
+.check input{width:24px;height:24px;margin:1px 0 0;flex:none}
+.linkbox{word-break:break-all;background:var(--bg);border-radius:10px;padding:10px 12px;font-size:13px;margin-top:10px}
+.hidden{display:none!important}
+.dmgwrap{max-width:520px;margin:0 auto;border:1px solid var(--line);border-radius:12px;background:#fff;padding:6px}
+.dmgwrap svg{width:100%;height:auto;display:block;touch-action:manipulation;cursor:crosshair}
+.stickybar{position:sticky;top:0;z-index:5;background:#0d0d0d;border-bottom:3px solid var(--acc);padding:10px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.stickybar .btn{min-height:44px;font-size:15px}
+.scaler{margin:16px auto;transform-origin:top left}
+.docouter{overflow:hidden;margin:0 auto}
+
+/* ============ KONTRATA (A4) ============ */
+#doc{width:760px;background:#fff;color:#111;font:12.5px/1.4 Arial,Helvetica,sans-serif;padding:22px 24px;box-shadow:0 2px 14px #0002}
+#doc .hd{display:grid;grid-template-columns:1.25fr 1.3fr .9fr;border:1.5px solid #333}
+#doc .hd>div{padding:8px 10px;border-right:1px dashed #555}
+#doc .hd>div:last-child{border-right:0;font-size:11.5px;line-height:1.35}
+#doc .dlogo img{height:44px;width:auto;display:block;margin:0 auto}
+#doc .dlogo{text-align:center;font-weight:800;font-style:italic;letter-spacing:.05em;font-size:15px;color:#333}
+#doc .dlogo small{display:block;font-weight:400;font-size:9.5px;letter-spacing:0;color:#555}
+#doc .co{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;font-size:11.5px}
+#doc .co div+div{border-left:1px dashed #555;padding-left:6px}
+#doc .contacts{display:flex;flex-direction:column;justify-content:center;gap:3px;font-size:12px}
+#doc .serial{text-align:right;margin:4px 4px 0;font-size:13px}
+#doc .serial b{font-size:14px;color:#000}
+#doc h1{text-align:center;font-family:Georgia,"Times New Roman",serif;font-size:22px;margin:2px 0 8px;color:#333;letter-spacing:.02em}
+#doc .g{display:grid;grid-template-columns:1fr 1fr;border:1.5px solid #333;border-top:0}
+#doc h1+.g{border-top:1.5px solid #333}
+#doc h1+.g>.b{border-top:0}
+#doc .b{padding:8px 10px;border-top:1px dashed #555}
+#doc .b+.b{border-left:1px dashed #555}
+#doc .t{font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:12.5px;color:#333;margin-bottom:5px;text-transform:uppercase}
+#doc .ln{display:flex;gap:6px;align-items:baseline;padding:3px 0;border-bottom:1px dashed #999;min-height:24px}
+#doc .ln:last-child{border-bottom:0}
+#doc .ln span{color:#444;white-space:nowrap}
+#doc .ln b{font-family:"Segoe Print","Bradley Hand","Comic Sans MS",cursive;font-weight:400;font-size:14px;color:#0b2b8c;text-transform:uppercase}
+#doc .cb{display:inline-block;width:12px;height:12px;border:1.3px solid #222;vertical-align:-1px;margin-right:5px;position:relative;background:#fff}
+#doc .cb.on::after{content:"";position:absolute;left:3px;top:-1px;width:4px;height:9px;border:solid #0b2b8c;border-width:0 2px 2px 0;transform:rotate(45deg)}
+#doc .eq{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;font-size:12px}
+#doc .terr div{padding:2px 0}
+#doc .dep{font-size:12px;border-top:1px dashed #555;margin-top:10px;padding-top:8px}
+#doc .dgm img{display:block;margin:0 auto;width:268px;height:214px}
+#doc .dep b{font-family:"Segoe Print","Bradley Hand","Comic Sans MS",cursive;font-weight:400;font-size:14px;color:#0b2b8c}
+#doc .sigb{min-height:100px}
+#doc .sigb img{max-height:64px;max-width:100%;display:block}
+#doc .sigline{border-bottom:1px solid #333;min-height:66px;display:flex;align-items:flex-end}
+#doc .small{font-size:10.5px;color:#555}
+#doc.pdf{width:715px;padding:0;box-shadow:none}
+#doc .pb{break-before:page;page-break-before:always;height:0}
+#doc .ax h3{font-family:Georgia,serif;font-size:14px;margin:14px 0 6px;color:#333;border-bottom:1.5px solid #333;padding-bottom:3px}
+#doc .ph{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#doc .ph figure{margin:0;break-inside:avoid;page-break-inside:avoid}
+#doc .ph img{width:100%;height:230px;object-fit:cover;border:1px solid #888;display:block}
+#doc .ph figcaption{font-size:10.5px;color:#555;margin-top:2px}
+
+@media print{
+  body{background:#fff}
+  header.top,main,.stickybar{display:none!important}
+  .scaler{transform:none!important;margin:0}
+  .docouter{height:auto!important;overflow:visible;width:auto!important}
+  #doc{box-shadow:none;padding:0;width:100%}
+  @page{size:A4;margin:10mm}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <img src="assets/logo-white.png" alt="Perfect Car Rental · Your Trip Solution">
+  <div class="who" id="who"></div>
+</header>
+
+<!-- =================== FAQJA E STAFIT =================== -->
+<main id="staff" class="hidden">
+  <div class="card">
+    <h2>Kontratë e re</h2>
+    <p class="hint">Plotëso të dhënat e makinës. Pastaj dërgoja linkun klientit, ose jepi tabletin këtu në zyrë.</p>
+    <div class="grid">
+      <label class="f">Marka / Model *<input id="mk" list="marka" placeholder="p.sh. VW"></label>
+      <label class="f">Model / Tipi *<input id="md" placeholder="p.sh. Passat CC"></label>
+      <label class="f">Ngjyra<input id="ng"></label>
+      <label class="f">Targa *<input id="tg" placeholder="AB 123 CD" style="text-transform:uppercase"></label>
+      <label class="f">KM në dhënie *<input id="kmi" inputmode="numeric"></label>
+      <label class="f">KM në kthim<input id="kmo" inputmode="numeric" placeholder="plotësohet në kthim"></label>
+    </div>
+    <datalist id="marka"><option>VW</option><option>Mercedes-Benz</option><option>BMW</option><option>Audi</option><option>Toyota</option><option>Fiat</option><option>Opel</option><option>Hyundai</option><option>Kia</option><option>Peugeot</option><option>Renault</option><option>Skoda</option><option>Ford</option></datalist>
+    <label class="f" style="margin-top:12px">Makina e larë?</label>
+    <div class="opts">
+      <label class="opt"><input type="radio" name="ws" value="1" checked> Po</label>
+      <label class="opt"><input type="radio" name="ws" value="0"> Jo</label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Kohëzgjatja e qirasë</h2>
+    <div class="grid">
+      <label class="f">Data e marrjes *<input id="dm" type="date"></label>
+      <label class="f">Orari i dhënies<input id="om" type="time"></label>
+      <label class="f">Data e dorëzimit *<input id="dd" type="date"></label>
+      <label class="f">Orari i kthimit<input id="od" type="time"></label>
+    </div>
+    <p class="hint" id="ditet" style="margin:10px 0 0"></p>
+  </div>
+
+  <div class="card">
+    <h2>Pajisjet, sigurimi, territori</h2>
+    <label class="f">Pajisjet e automjetit</label>
+    <div class="opts">
+      <label class="opt"><input type="checkbox" id="eq0" checked> Dokumenta</label>
+      <label class="opt"><input type="checkbox" id="eq1" checked> Gomë rezervë</label>
+      <label class="opt"><input type="checkbox" id="eq2"> Ndenjëse për fëmijë</label>
+      <label class="opt"><input type="checkbox" id="eq3" checked> Krik / Xhirogome</label>
+    </div>
+    <label class="f" style="margin-top:14px">Sigurimi</label>
+    <div class="opts">
+      <label class="opt"><input type="radio" name="ins" value="f"> Full Kasko</label>
+      <label class="opt"><input type="radio" name="ins" value="s" checked> Sigurim i thjeshtë</label>
+    </div>
+    <label class="f" style="margin-top:14px">Territori i lejuar</label>
+    <div class="opts">
+      <label class="opt"><input type="checkbox" id="t0" checked> Shqipëri</label>
+      <label class="opt"><input type="checkbox" id="t1"> Maqedoni e Veriut</label>
+      <label class="opt"><input type="checkbox" id="t2"> Mal i Zi</label>
+      <label class="opt"><input type="checkbox" id="t3"> Greqi</label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Dëmtimet ekzistuese</h2>
+    <p class="hint">Prek mbi skemë aty ku makina ka gërvishtje ose dëmtim. Prek shenjën përsëri për ta hequr.</p>
+    <div class="dmgwrap" id="dmgWrap"></div>
+    <div class="row"><button class="btn" type="button" id="dmgClr">Fshi të gjitha shenjat</button><span class="hint" id="dmgCount" style="margin:0"></span></div>
+  </div>
+
+  <div class="card">
+    <h2>Depozita dhe karburanti</h2>
+    <div class="grid">
+      <label class="f">Depozita e garancisë (€)<input id="dep" type="number" min="0" inputmode="decimal"></label>
+      <label class="f">Lloji i karburantit<select id="kt"><option>Naftë</option><option>Benzinë</option><option>Benzinë / Gaz</option><option>Hibrid</option><option>Elektrike</option></select></label>
+    </div>
+    <label class="f" style="margin-top:12px">Niveli i karburantit</label>
+    <div class="opts">
+      <label class="opt"><input type="radio" name="kl" value="1/4"> 1/4</label>
+      <label class="opt"><input type="radio" name="kl" value="1/2"> 1/2</label>
+      <label class="opt"><input type="radio" name="kl" value="3/4"> 3/4</label>
+      <label class="opt"><input type="radio" name="kl" value="Full" checked> Full</label>
+    </div>
+    <label class="f" style="margin-top:12px">Komente<textarea id="kom" rows="2" placeholder="p.sh. gërvishtje e vogël te parakolpi"></textarea></label>
+  </div>
+
+  <div class="card">
+    <h2>Firma e kompanisë</h2>
+    <p class="hint">Firmos një herë. Ruhet në këtë pajisje dhe vendoset vetë në çdo kontratë.</p>
+    <div class="sigwrap"><canvas class="sig" id="sigC"></canvas><span>Firmo këtu</span></div>
+    <div class="row"><button class="btn" type="button" id="clrC">Fshi firmën</button><span class="okmsg" id="sigCsaved"></span></div>
+  </div>
+
+  <div class="card">
+    <h2>Gati</h2>
+    <div class="row">
+      <button class="btn wa" type="button" id="mkLink">Krijo linkun për klientin</button>
+      <button class="btn" type="button" id="here">Plotëso këtu (në tablet)</button>
+    </div>
+    <div class="msg" id="smsg"></div>
+    <div id="linkOut" class="hidden">
+      <div class="linkbox" id="linkTxt"></div>
+      <div class="row">
+        <button class="btn" type="button" id="copy">Kopjo linkun</button>
+        <a class="btn wa" id="sendWa" target="_blank" rel="noopener">Dërgo me WhatsApp</a>
+      </div>
+      <p class="hint" style="margin-top:8px">Serial nr. i kësaj kontrate: <b id="serOut"></b></p>
+    </div>
+  </div>
+</main>
+
+<!-- =================== FAQJA E KLIENTIT =================== -->
+<main id="client" class="hidden">
+  <div class="card">
+    <h2>Mirë se vini!</h2>
+    <p class="hint">Plotësoni 4 hapa të shkurtër dhe kontrata është gati. Welcome! Complete 4 short steps to sign your rental agreement.</p>
+    <div class="summary" id="sum"></div>
+  </div>
+
+  <div class="card">
+    <h2><span class="step">1</span>Të dhënat tuaja · Your details</h2>
+    <div class="grid" style="margin-top:10px">
+      <label class="f">Emër Mbiemër / Name Surname *<input id="ce" autocomplete="name"></label>
+      <label class="f">Nr. ID / Passport *<input id="ci"></label>
+      <label class="f">Nr. patentës / Driving licence *<input id="cp"></label>
+      <label class="f">Nr. tel / Phone *<input id="ct" type="tel" autocomplete="tel" placeholder="+355 6X XXX XXXX"></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="step">2</span>Dokumentet · Documents</h2>
+    <p class="hint">Shtypni katrorin dhe fotografoni dokumentin. Tap a box and take a photo.</p>
+    <div class="grid">
+      <label class="photo-btn" id="pb_idF"><b>ID / Pasaportë – përpara *</b>ID / Passport – front<input type="file" accept="image/*" capture="environment" data-k="idF"></label>
+      <label class="photo-btn" id="pb_idB"><b>ID – mbrapa</b>ID – back<input type="file" accept="image/*" capture="environment" data-k="idB"></label>
+      <label class="photo-btn" id="pb_lic"><b>Patenta *</b>Driving licence<input type="file" accept="image/*" capture="environment" data-k="lic"></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="step">3</span>Fotot e makinës · Car photos</h2>
+    <p class="hint">Fotografoni makinën nga të gjitha anët kur e merrni (deri në 8 foto). Photograph the car from all sides at pickup.</p>
+    <label class="photo-btn"><b>+ Shto foto</b>Add photos<input type="file" accept="image/*" capture="environment" multiple id="carIn"></label>
+    <div class="thumbs" id="carThumbs"></div>
+  </div>
+
+  <div class="card">
+    <h2><span class="step">4</span>Firma · Signature</h2>
+    <p class="hint">Firmosni me gisht në kutinë më poshtë. Sign with your finger.</p>
+    <div class="sigwrap"><canvas class="sig" id="sigK"></canvas><span>Firmo këtu · Sign here</span></div>
+    <div class="row"><button class="btn" type="button" id="clrK">Fshi · Clear</button></div>
+    <label class="check" style="margin-top:16px"><input type="checkbox" id="agree"><span>Konfirmoj që të dhënat janë të sakta, pranoj kushtet e këtij autorizimi dhe përpunimin e të dhënave të mia personale nga Perfect Car Rental për qëllim të kësaj qiraje. <i style="color:var(--muted)">I confirm the data is correct and accept the terms and the processing of my personal data for this rental.</i></span></label>
+  </div>
+
+  <button class="btn main full" type="button" id="gen" style="min-height:56px;font-size:18px">Shiko kontratën · Review contract</button>
+  <div class="msg" id="cmsg"></div>
+</main>
+
+<!-- =================== KONTRATA =================== -->
+<div id="view" class="hidden">
+  <div class="stickybar">
+    <button class="btn wa" type="button" id="send">Dërgo kontratën · Send</button>
+    <button class="btn" type="button" id="dl">Shkarko PDF</button>
+    <button class="btn" type="button" id="prt">Printo</button>
+    <button class="btn" type="button" id="back">← Ndrysho</button>
+  </div>
+  <p class="okmsg" id="vmsg" style="text-align:center;margin:10px 12px 0"></p>
+  <div class="docouter" id="docouter"><div class="scaler" id="scaler"><div id="doc"></div></div></div>
+</div>
+
+<script src="assets/html2pdf.bundle.min.js"></script>
+<script>
+{
+/* ================= TË DHËNAT E KOMPANISË ================= */
+const CO = {
+  emri: "PERFECT CAR RENTAL",
+  grupi: "2BG GROUP",
+  pf: "BESMIR NURCE PF",
+  nipt: "M21402036P",
+  perfaqesuesi: "BESMIR NURCE",
+  tel: "+355 69 68 38 939",
+  whatsapp: "355696838939",          // numri ku vijnë kontratat (pa + dhe pa hapësira)
+  email: "",                         // p.sh. "info@perfectcarrentaltirana.com" (opsionale)
+  ig: "perfect_car_rental_tirana",
+  web: "perfectcarrentaltirana.com",
+  pastrimi: 10                       // € për makinë të pa larë
+};
+/* ========================================================= */
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pad = n => String(n).padStart(2, "0");
+const LS = { get(k){ try { return localStorage.getItem(k); } catch(e) { return null; } }, set(k,v){ try { localStorage.setItem(k,v); } catch(e) {} } };
+const fmtD = v => { if (!v) return ""; const [y,m,d] = v.split("-"); return `${d}/${m}/${y}`; };
+
+/* ---------- link encoding ---------- */
+const enc = o => { const b = new TextEncoder().encode(JSON.stringify(o)); let s = ""; b.forEach(x => s += String.fromCharCode(x));
+  return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,""); };
+const dec = s => { s = s.replace(/-/g,"+").replace(/_/g,"/"); const bin = atob(s); const u = Uint8Array.from(bin, c => c.charCodeAt(0));
+  return JSON.parse(new TextDecoder().decode(u)); };
+
+/* ---------- images ---------- */
+function loadImg(file, max = 1280, q = .8){
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file), im = new Image();
+    im.onload = () => { const k = Math.min(1, max / Math.max(im.width, im.height));
+      const c = document.createElement("canvas"); c.width = Math.round(im.width*k); c.height = Math.round(im.height*k);
+      c.getContext("2d").drawImage(im, 0, 0, c.width, c.height); URL.revokeObjectURL(url); res(c.toDataURL("image/jpeg", q)); };
+    im.onerror = rej; im.src = url;
+  });
+}
+
+/* ---------- signature pad ---------- */
+function makePad(canvas, onEnd){
+  const ctx = canvas.getContext("2d"); let drawing = false, empty = true, last = null, snapshot = null;
+  function setup(){ const r = canvas.getBoundingClientRect(); if (!r.width) return; const d = window.devicePixelRatio || 1;
+    canvas.width = r.width*d; canvas.height = r.height*d; ctx.setTransform(d,0,0,d,0,0);
+    ctx.lineWidth = 2.6; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.strokeStyle = "#0b2b8c";
+    if (snapshot) { const im = new Image(); im.onload = () => ctx.drawImage(im, 0, 0, r.width, r.height); im.src = snapshot; } }
+  const pos = e => { const r = canvas.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  canvas.addEventListener("pointerdown", e => { e.preventDefault(); drawing = true; last = pos(e); canvas.setPointerCapture(e.pointerId);
+    ctx.beginPath(); ctx.arc(last[0], last[1], 1.2, 0, 7); ctx.fillStyle = "#0b2b8c"; ctx.fill(); empty = false; });
+  canvas.addEventListener("pointermove", e => { if (!drawing) return; const p = pos(e);
+    ctx.beginPath(); ctx.moveTo(...last); ctx.lineTo(...p); ctx.stroke(); last = p; });
+  const end = () => { if (!drawing) return; drawing = false; snapshot = canvas.toDataURL("image/png"); onEnd && onEnd(); };
+  canvas.addEventListener("pointerup", end); canvas.addEventListener("pointercancel", end);
+  const ro = new ResizeObserver(setup); ro.observe(canvas);
+  return {
+    clear(){ ctx.clearRect(0,0,canvas.width,canvas.height); empty = true; snapshot = null; },
+    isEmpty: () => empty,
+    load(src){ snapshot = src; empty = false; setup(); },
+    small(){ // trimmed, small PNG for the link
+      const w = canvas.width, h = canvas.height, data = ctx.getImageData(0,0,w,h).data; let x0=w,y0=h,x1=0,y1=0;
+      for (let y=0;y<h;y++) for (let x=0;x<w;x++) if (data[(y*w+x)*4+3] > 20) { if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; }
+      if (x1 <= x0) return "";
+      const cw = x1-x0+1, ch = y1-y0+1, k = Math.min(1, 240/cw, 80/ch), o = document.createElement("canvas");
+      o.width = Math.max(1, Math.round(cw*k)); o.height = Math.max(1, Math.round(ch*k));
+      o.getContext("2d").drawImage(canvas, x0, y0, cw, ch, 0, 0, o.width, o.height);
+      return o.toDataURL("image/png");
+    },
+    full: () => canvas.toDataURL("image/png")
+  };
+}
+
+
+/* ---------- skema e makinës ---------- */
+const WHEEL = (cx, cy, r) => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#fff" stroke="#333" stroke-width="1.6"/><circle cx="${cx}" cy="${cy}" r="${r*.45}" fill="none" stroke="#777" stroke-width="1.2"/>`;
+function sideView(y, flip){
+  const g = `<path d="M18 ${y+30} L22 ${y+20} Q30 ${y+16} 52 ${y+15} L82 ${y+2} Q92 ${y-2} 120 ${y-2} L170 ${y-1} Q184 ${y} 198 ${y+12} L232 ${y+15} Q248 ${y+18} 250 ${y+26} L250 ${y+32} L18 ${y+32} Z" fill="#f4f4f4" stroke="#333" stroke-width="1.6" stroke-linejoin="round"/>
+    <path d="M88 ${y+4} Q95 ${y+1} 118 ${y+1} L122 ${y+14} L60 ${y+15} Z M128 ${y+1} L168 ${y+2} Q180 ${y+3} 190 ${y+13} L130 ${y+14} Z" fill="#dfe3ea" stroke="#555" stroke-width="1.1"/>
+    <line x1="125" y1="${y+1}" x2="127" y2="${y+31}" stroke="#777" stroke-width="1"/>
+    ${WHEEL(62, y+32, 11)}${WHEEL(206, y+32, 11)}`;
+  return flip ? `<g transform="translate(268 0) scale(-1 1)">${g}</g>` : g;
+}
+function carSVG(marks, interactive){
+  const top = `<rect x="38" y="78" width="192" height="64" rx="22" fill="#f4f4f4" stroke="#333" stroke-width="1.6"/>
+    <path d="M86 84 Q80 110 86 136 L104 132 Q100 110 104 88 Z M176 86 Q186 110 176 134 L160 130 Q166 110 160 90 Z" fill="#dfe3ea" stroke="#555" stroke-width="1.1"/>
+    <rect x="106" y="88" width="52" height="44" rx="6" fill="#ececec" stroke="#777" stroke-width="1"/>
+    <rect x="6" y="82" width="22" height="56" rx="7" fill="#f4f4f4" stroke="#333" stroke-width="1.5"/><rect x="10" y="94" width="14" height="32" rx="3" fill="#dfe3ea" stroke="#555"/>
+    <rect x="240" y="82" width="22" height="56" rx="7" fill="#f4f4f4" stroke="#333" stroke-width="1.5"/><rect x="244" y="94" width="14" height="32" rx="3" fill="#dfe3ea" stroke="#555"/>`;
+  const lbl = (x, y, t) => `<text x="${x}" y="${y}" font-size="8" fill="#777" font-family="Arial" text-anchor="middle">${t}</text>`;
+  const m = marks.map(([x,y],i) => `<g data-m="${i}"><circle cx="${x}" cy="${y}" r="7" fill="#d32f2f22" stroke="#d32f2f" stroke-width="1.4"/><path d="M${x-4} ${y-4}L${x+4} ${y+4}M${x+4} ${y-4}L${x-4} ${y+4}" stroke="#d32f2f" stroke-width="2.2" stroke-linecap="round"/></g>`).join("");
+  return `<svg viewBox="0 0 268 214" xmlns="http://www.w3.org/2000/svg" ${interactive ? 'id="dmgSvg"' : 'width="268" height="214"'}>
+    <rect width="268" height="214" fill="#fff"/>${sideView(14,false)}${top}${sideView(166,true)}
+    ${lbl(17,150,"para")}${lbl(251,150,"mbrapa")}${lbl(134,8,"ana e majtë")}${lbl(134,212,"ana e djathtë")}${m}</svg>`;
+}
+let marks = [];
+function drawDmg(){ $("dmgWrap").innerHTML = carSVG(marks, true); $("dmgCount").textContent = marks.length ? `${marks.length} shenja` : "Asnjë dëmtim i shënuar";
+  $("dmgSvg").addEventListener("click", e => {
+    const g = e.target.closest("[data-m]"); if (g) { marks.splice(+g.dataset.m, 1); drawDmg(); return; }
+    const svg = $("dmgSvg"), pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+    const p = pt.matrixTransform(svg.getScreenCTM().inverse()); marks.push([Math.round(p.x), Math.round(p.y)]); drawDmg(); }); }
+const packMarks = a => a.map(p => p.join(",")).join(";");
+const unpackMarks = s => (s || "").split(";").filter(Boolean).map(p => p.split(",").map(Number)).filter(p => p.length === 2 && p.every(isFinite));
+
+/* ======================= STAFF ======================= */
+let D = null;            // rental data (from staff or link)
+const C = { idF:null, idB:null, lic:null, cars:[] };   // client data
+let padC, padK;
+
+function initStaff(){
+  $("staff").classList.remove("hidden"); $("who").textContent = "Paneli i stafit";
+  const t = new Date(); $("dm").value = `${t.getFullYear()}-${pad(t.getMonth()+1)}-${pad(t.getDate())}`;
+  $("om").value = `${pad(t.getHours())}:${pad(t.getMinutes())}`;
+  padC = makePad($("sigC"), () => { const s = padC.small(); if (s) { LS.set("pcr_sig", s); $("sigCsaved").textContent = "Firma u ruajt ✓"; } });
+  const saved = LS.get("pcr_sig"); if (saved) { padC.load(saved); $("sigCsaved").textContent = "Firma e ruajtur ✓"; }
+  $("clrC").onclick = () => { padC.clear(); LS.set("pcr_sig", ""); $("sigCsaved").textContent = ""; };
+  ["dm","dd"].forEach(id => $(id).addEventListener("input", showDays));
+  drawDmg(); $("dmgClr").onclick = () => { marks = []; drawDmg(); };
+  $("tg").addEventListener("input", e => e.target.value = e.target.value.toUpperCase());
+  $("mkLink").onclick = () => { const d = collect(); if (!d) return; const url = location.origin + location.pathname + "?k=" + enc(d);
+    $("linkTxt").textContent = url; $("serOut").textContent = d.s; $("linkOut").classList.remove("hidden");
+    const txt = `Përshëndetje! Ju lutem plotësoni dhe firmosni kontratën e qirasë për ${d.mk} ${d.md} (${d.tg}): ${url}`;
+    $("sendWa").href = "https://wa.me/?text=" + encodeURIComponent(txt);
+    $("copy").onclick = async () => { try { await navigator.clipboard.writeText(url); $("copy").textContent = "U kopjua ✓"; } catch(e) { $("copy").textContent = "Kopjoje me dorë"; } };
+  };
+  $("here").onclick = () => { const d = collect(); if (!d) return; D = d; $("staff").classList.add("hidden"); initClient(); window.scrollTo(0,0); };
+}
+function days(a, b){ if (!a || !b) return 0; const n = Math.round((new Date(b) - new Date(a)) / 86400000); return n > 0 ? n : 0; }
+function showDays(){ const n = days($("dm").value, $("dd").value); $("ditet").textContent = n ? `${n} ditë` : ""; }
+function nextSerial(){ const y = new Date().getFullYear(); let n = parseInt(LS.get("pcr_n_"+y) || "0", 10) + 1; LS.set("pcr_n_"+y, n);
+  return `${y}-${String(n).padStart(4,"0")}`; }
+function collect(){
+  const req = ["mk","md","tg","kmi","dm","dd"]; let bad = false;
+  req.forEach(id => { const b = !$(id).value.trim(); $(id).classList.toggle("bad", b); bad = bad || b; });
+  if (bad) { $("smsg").textContent = "Plotëso fushat e shënuara me të kuqe."; return null; }
+  if (!days($("dm").value, $("dd").value)) { $("smsg").textContent = "Data e dorëzimit duhet të jetë pas datës së marrjes."; $("dd").classList.add("bad"); return null; }
+  $("smsg").textContent = "";
+  const r = n => (document.querySelector(`input[name=${n}]:checked`) || {}).value || "";
+  const fl = p => [0,1,2,3].map(i => $(p+i).checked ? 1 : 0).join("");
+  return { s: nextSerial(), mk: $("mk").value.trim(), md: $("md").value.trim(), ng: $("ng").value.trim(), tg: $("tg").value.trim(),
+    ki: $("kmi").value.trim(), ko: $("kmo").value.trim(), ws: r("ws"), dm: $("dm").value, om: $("om").value, dd: $("dd").value, od: $("od").value,
+    eq: fl("eq"), in: r("ins"), te: fl("t"), dp: $("dep").value.trim(), kt: $("kt").value, kl: r("kl"), ko2: $("kom").value.trim(), dg: packMarks(marks),
+    fs: padC.isEmpty() ? "" : (padC.small() || LS.get("pcr_sig") || "") };
+}
+
+/* ======================= CLIENT ======================= */
+function initClient(){
+  $("client").classList.remove("hidden"); $("who").textContent = "Kontrata nr. " + D.s;
+  const n = days(D.dm, D.dd);
+  const items = [["Makina · Car", `${D.mk} ${D.md}`], ["Targa · Plate", D.tg], ["Marrja · Pick up", `${fmtD(D.dm)} ${D.om || ""}`],
+    ["Kthimi · Drop off", `${fmtD(D.dd)} ${D.od || ""}`], ["Kohëzgjatja · Days", `${n} ditë`]];
+  if (D.dp) items.push(["Depozita · Deposit", D.dp + " €"]);
+  $("sum").innerHTML = items.map(([a,b]) => `<div><small>${esc(a)}</small><b>${esc(b)}</b></div>`).join("");
+  padK = makePad($("sigK"));
+  $("clrK").onclick = () => padK.clear();
+  document.querySelectorAll("input[data-k]").forEach(inp => inp.addEventListener("change", async e => {
+    const f = e.target.files[0]; if (!f) return; const k = e.target.dataset.k; C[k] = await loadImg(f);
+    const box = $("pb_"+k); box.classList.add("has"); let im = box.querySelector("img"); if (!im) { im = document.createElement("img"); box.appendChild(im); } im.src = C[k];
+  }));
+  $("carIn").addEventListener("change", async e => { for (const f of e.target.files) { if (C.cars.length >= 8) break; C.cars.push(await loadImg(f, 1100, .78)); } e.target.value = ""; drawCars(); });
+  $("carThumbs").addEventListener("click", e => { const i = e.target.dataset.i; if (i !== undefined) { C.cars.splice(+i, 1); drawCars(); } });
+  $("gen").onclick = review;
+}
+function drawCars(){ $("carThumbs").innerHTML = C.cars.map((s,i) => `<div><img src="${s}" alt="Foto ${i+1}"><button type="button" data-i="${i}" aria-label="Hiq">×</button></div>`).join(""); }
+
+function review(){
+  const req = ["ce","ci","cp","ct"]; let bad = false;
+  req.forEach(id => { const b = !$(id).value.trim(); $(id).classList.toggle("bad", b); bad = bad || b; });
+  const fail = m => { $("cmsg").textContent = m; };
+  if (bad) return fail("Plotësoni fushat e shënuara me të kuqe. · Please fill the fields in red.");
+  if (!C.idF) return fail("Fotografoni ID-në ose pasaportën. · Please photograph your ID / passport.");
+  if (!C.lic) return fail("Fotografoni patentën. · Please photograph your driving licence.");
+  if (padK.isEmpty()) return fail("Mungon firma. · Signature is missing.");
+  if (!$("agree").checked) return fail("Konfirmoni kushtet. · Please accept the terms.");
+  $("cmsg").textContent = "";
+  C.emri = $("ce").value.trim(); C.id = $("ci").value.trim(); C.pat = $("cp").value.trim(); C.tel = $("ct").value.trim();
+  C.sig = padK.full(); C.time = new Date();
+  $("doc").innerHTML = renderDoc(D, C);
+  $("client").classList.add("hidden"); $("view").classList.remove("hidden"); window.scrollTo(0,0);
+  document.title = `Kontrata_${D.s}_${D.tg.replace(/\s+/g,"")}_${C.emri.replace(/\s+/g,"_")}`;
+  fit(); setTimeout(fit, 300);
+}
+
+/* ======================= DOCUMENT ======================= */
+function renderDoc(d, c){
+  const cb = on => `<span class="cb${on ? " on" : ""}"></span>`;
+  const ln = (lbl, val) => `<div class="ln"><span>${lbl}</span><b>${esc(val)}</b></div>`;
+  const eq = d.eq.split(""), te = d.te.split("");
+  const t = c.time, ts = `${pad(t.getDate())}/${pad(t.getMonth()+1)}/${t.getFullYear()} ${pad(t.getHours())}:${pad(t.getMinutes())}`;
+  const n = days(d.dm, d.dd);
+  const photos = c.cars.map((s,i) => `<figure><img src="${s}"><figcaption>Foto ${i+1}</figcaption></figure>`).join("");
+  return `
+  <div class="hd">
+    <div><div class="dlogo"><img src="assets/logo-dark.png" alt="Perfect Car Rental"></div>
+      <div class="co"><div>${esc(CO.emri)}<br>${esc(CO.grupi)}</div><div>${esc(CO.pf)}<br>${esc(CO.nipt)}</div></div></div>
+    <div class="contacts"><div>☎ ${esc(CO.tel)}</div><div>◎ ${esc(CO.ig)}</div><div>⊕ ${esc(CO.web)}</div></div>
+    <div>Policia: 129<br>Zjarrfikëse: 128<br>Ambulanca: 127<br>Policia Rrugore: 126<br>Emergjenca: 112</div>
+  </div>
+  <div class="serial">Serial nr: <b>${esc(d.s)}</b></div>
+  <h1>AUTORIZIM / AUTHORIZATION</h1>
+
+  <div class="g">
+    <div class="b"><div class="t">Qiramarrësi / Customer info</div>
+      ${ln("Emër Mbiemër / Name Surname:", c.emri)}${ln("Nr. ID / Passport:", c.id)}${ln("Nr. patentës / Driving licence nr:", c.pat)}${ln("Nr. tel / Tel. number:", c.tel)}
+      ${ln("Komente / Reviews:", d.ko2)}</div>
+    <div class="b"><div class="t">Identifikimi automjetit / Vehicle info</div>
+      ${ln("Marka / Model:", d.mk)}${ln("Model / Type:", d.md)}${ln("Ngjyra / Colour:", d.ng)}${ln("Targa / Plate:", d.tg)}
+      <div class="ln"><span>KM in:</span><b>${esc(d.ki)}</b><span style="margin-left:auto">KM out:</span><b>${esc(d.ko)}</b></div>
+      <div class="ln"><span>Car Washed:</span> ${cb(d.ws==="1")}Yes ${cb(d.ws==="0")}No <span class="small">(${CO.pastrimi} € payment for not washing)</span></div></div>
+  </div>
+  <div class="g">
+    <div class="b"><div class="t">Kohëzgjatja e qirasë / Rental period</div>
+      ${ln("Data e marrjes / Pick up:", fmtD(d.dm))}${ln("Orari i dhënies / Delivery schedule:", d.om)}
+      ${ln("Data e dorëzimit / Drop off:", fmtD(d.dd))}${ln("Orari kthimit / Return schedule:", d.od)}${ln("Ditë / Days:", n)}</div>
+    <div class="b"><div class="t">Pajisjet e automjetit / Vehicle equipment</div>
+      <div class="eq"><div>${cb(eq[0]==="1")}Dokumenta / Document</div><div>${cb(eq[1]==="1")}Gomë rezervë / Spare tyre</div>
+      <div>${cb(eq[2]==="1")}Ndenjëse për fëmijë / Baby car seat</div><div>${cb(eq[3]==="1")}Krik / Xhirogome</div></div>
+      <div class="t" style="margin-top:10px">Sigurimi / Insurance</div>
+      <div class="eq"><div>${cb(d.in==="f")}Full Kasko</div><div>${cb(d.in==="s")}Simple Insurance</div></div></div>
+  </div>
+  <div class="g">
+    <div class="b terr"><div class="t">Kalim kufiri / Border crossing</div>
+      <div>${cb(te[0]==="1")}Brenda territorit shqiptar / Within the Albanian territory</div>
+      <div>${cb(te[1]==="1")}Maqedoni / North Macedonia</div>
+      <div>${cb(te[2]==="1")}Mal i Zi / Montenegro &nbsp; ${cb(te[3]==="1")}Greqi / Greece</div>
+      <div class="dep"><div class="t">Depozita e garancisë / Security deposit</div>
+      Qiramarrësi duhet të lërë një depozitë garancie prej <b>${esc(d.dp || "—")}${d.dp ? " €" : ""}</b> që të mbulojë dëmtimet dhe gjobat e policisë të marra nga klienti.<br><br>
+      <i>The tenant must leave a guarantee deposit of <b>${esc(d.dp || "—")}${d.dp ? " €" : ""}</b> to cover any damages and police fines incurred by the client.</i></div></div>
+    <div class="b"><div class="t">Gjendja e automjetit / Vehicle condition</div>
+      <div class="dgm"><img alt="" width="268" height="214" src="data:image/svg+xml;charset=utf-8,${encodeURIComponent(carSVG(unpackMarks(d.dg), false))}"></div>
+      <div class="small" style="margin:2px 0 6px">${unpackMarks(d.dg).length ? "✕ = dëmtim ekzistues / existing damage" : "Pa dëmtime të shënuara / No damage marked"}</div>
+      <div class="t">Karburanti / Fuel</div>
+      ${ln("Lloji / Type:", d.kt)}
+      <div class="ln">${["1/4","1/2","3/4","Full"].map(v => `<span>${cb(d.kl===v)}${v}</span>`).join("&nbsp;&nbsp;")}</div></div>
+  </div>
+  <div class="g">
+    <div class="b sigb"><div class="t">${esc(CO.emri)}</div>
+      <div class="sigline">${d.fs ? `<img src="${d.fs}" alt="">` : ""}</div><div class="small">${esc(CO.perfaqesuesi)}</div></div>
+    <div class="b sigb"><div class="t">Klienti / Client</div>
+      <div class="sigline"><img src="${c.sig}" alt="Firma"></div>
+      <div class="small">${esc(c.emri)} · Firmosur elektronikisht më ${ts}</div></div>
+  </div>
+
+  <div class="pb"></div>
+  <div class="ax">
+    <h3>Aneks 1 – Dokumentet e klientit / Customer documents</h3>
+    <div class="ph">
+      <figure><img src="${c.idF}"><figcaption>ID / Pasaportë – përpara</figcaption></figure>
+      ${c.idB ? `<figure><img src="${c.idB}"><figcaption>ID – mbrapa</figcaption></figure>` : ""}
+      <figure><img src="${c.lic}"><figcaption>Patenta / Driving licence</figcaption></figure>
+    </div>
+    ${c.cars.length ? `<h3>Aneks 2 – Gjendja e automjetit në dorëzim / Vehicle condition (${esc(d.tg)})</h3><div class="ph">${photos}</div>` : ""}
+    <p class="small" style="margin-top:8px">Dokumenti u plotësua dhe u firmos elektronikisht më ${ts}. Serial nr. ${esc(d.s)}.</p>
+  </div>`;
+}
+
+/* scale A4 preview to screen */
+function fit(){ const doc = $("doc"), sc = $("scaler"), out = $("docouter"); if ($("view").classList.contains("hidden")) return;
+  const avail = Math.min(document.documentElement.clientWidth - 16, 760), k = avail / 760;
+  sc.style.transform = `scale(${k})`; sc.style.width = "760px"; out.style.width = (760*k) + "px"; out.style.height = (doc.offsetHeight*k + 32) + "px"; }
+const ro = new ResizeObserver(fit); ro.observe(document.documentElement);
+
+/* ---------- PDF ---------- */
+let pdfBlob = null;
+async function makePdf(){
+  if (pdfBlob) return pdfBlob;
+  if (!window.html2pdf) throw new Error("nolib");
+  const opt = { margin: [8,8,8,8], filename: document.title + ".pdf", image: { type: "jpeg", quality: .9 },
+    html2canvas: { scale: 2, useCORS: true, backgroundColor: "#fff" }, jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+    pagebreak: { mode: ["css"], before: ".pb", avoid: ["figure", ".g"] } };
+  const sc = $("scaler"), prev = sc.style.transform; sc.style.transform = "none"; $("doc").classList.add("pdf");
+  try { pdfBlob = await html2pdf().set(opt).from($("doc")).outputPdf("blob"); } finally { $("doc").classList.remove("pdf"); sc.style.transform = prev; fit(); }
+  return pdfBlob;
+}
+async function busy(btn, fn){ const t = btn.textContent; btn.disabled = true; btn.textContent = "Duke përgatitur…"; try { await fn(); } catch(e) { $("vmsg").style.color = "var(--err)"; $("vmsg").textContent = "Nuk u krijua PDF. Provoni butonin Printo → Ruaj si PDF."; } finally { btn.disabled = false; btn.textContent = t; } }
+function download(blob){ const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = document.title + ".pdf"; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000); }
+
+$("send").onclick = () => busy($("send"), async () => {
+  const blob = await makePdf(), file = new File([blob], document.title + ".pdf", { type: "application/pdf" });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: "Kontrata " + D.s, text: `Kontrata ${D.s} – ${C.emri} – ${D.tg}` });
+      $("vmsg").style.color = ""; $("vmsg").textContent = "Faleminderit! Zgjidhni WhatsApp dhe dërgojeni te Perfect Car Rental."; return; }
+    catch(e) { if (e.name === "AbortError") return; }
+  }
+  download(blob);
+  const wa = "https://wa.me/" + CO.whatsapp + "?text=" + encodeURIComponent(`Përshëndetje, po ju dërgoj kontratën ${D.s} (${C.emri}, ${D.tg}).`);
+  $("vmsg").style.color = ""; $("vmsg").innerHTML = `PDF-ja u shkarkua. Dërgojeni në WhatsApp: <a href="${wa}" target="_blank" rel="noopener">${esc(CO.tel)}</a>` +
+    (CO.email ? ` ose email: <a href="mailto:${esc(CO.email)}">${esc(CO.email)}</a>` : "");
+});
+$("dl").onclick = () => busy($("dl"), async () => download(await makePdf()));
+$("prt").onclick = () => { try { window.print(); } catch(e) {} };
+$("back").onclick = () => { pdfBlob = null; $("view").classList.add("hidden"); $("client").classList.remove("hidden"); document.title = "Perfect Car Rental · Autorizim"; };
+
+/* ---------- start ---------- */
+const k = new URLSearchParams(location.search).get("k");
+if (k) { try { D = dec(k); initClient(); } catch(e) { document.querySelector("#client").classList.remove("hidden"); document.querySelector("#client").innerHTML = '<div class="card"><h2>Linku nuk është i saktë</h2><p class="hint">Kërkoni një link të ri nga Perfect Car Rental: ' + esc(CO.tel) + '</p></div>'; } }
+else initStaff();
+}
+</script>
+</body>
+</html>
