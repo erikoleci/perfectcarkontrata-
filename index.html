@@ -64,6 +64,9 @@ canvas.sig{width:100%;height:190px;display:block;touch-action:none}
 .check input{width:24px;height:24px;margin:1px 0 0;flex:none}
 .linkbox{word-break:break-all;background:var(--bg);border-radius:10px;padding:10px 12px;font-size:13px;margin-top:10px}
 .hidden{display:none!important}
+.ocrmsg{margin-top:12px;padding:10px 14px;border-radius:10px;background:var(--accs);font-size:15px;font-weight:600}
+.ocrmsg.err{background:#fdecea;color:var(--err)}
+input.auto{background:#fff8d6;border-color:#e0b800}
 .agreebox{max-width:760px;margin:16px auto 60px;border:2px solid var(--acc)}
 #view:not(.signed) .signed-only{display:none}
 @media(max-width:780px){.agreebox{margin:16px 8px 60px}}
@@ -254,23 +257,27 @@ canvas.sig{width:100%;height:190px;display:block;touch-action:none}
   </div>
 
   <div class="card">
-    <h2><span class="step">1</span>Të dhënat tuaja · Your details</h2>
+    <h2><span class="step">1</span>Dokumentet · Documents</h2>
+    <p class="hint">Vendoseni dokumentin në tavolinë, pa dritë direkte mbi të, dhe fotografojeni të gjithë. Të dhënat plotësohen vetë. · Place the document on a table, avoid glare, and photograph it fully – your details fill in automatically.</p>
+    <div class="grid">
+      <label class="photo-btn" id="pb_lic"><b>Patenta – përpara *</b>Driving licence – front<input type="file" accept="image/*" capture="environment" data-k="lic"></label>
+      <label class="photo-btn" id="pb_licB"><b>Patenta – mbrapa *</b>Driving licence – back<input type="file" accept="image/*" capture="environment" data-k="licB"></label>
+      <label class="photo-btn" id="pb_idF"><b>ID / Pasaportë</b>ID / Passport (opsionale)<input type="file" accept="image/*" capture="environment" data-k="idF"></label>
+      <label class="photo-btn" id="pb_idB"><b>ID – mbrapa</b>ID – back (opsionale)<input type="file" accept="image/*" capture="environment" data-k="idB"></label>
+    </div>
+    <div id="ocrMsg" class="ocrmsg hidden"></div>
+  </div>
+
+  <div class="card">
+    <h2><span class="step">2</span>Të dhënat tuaja · Your details</h2>
+    <p class="hint">Kontrolloni të dhënat që u lexuan nga dokumenti dhe korrigjoni nëse duhet. · Check the details read from your document.</p>
     <div class="grid" style="margin-top:10px">
       <label class="f">Emër Mbiemër / Name Surname *<input id="ce" autocomplete="name"></label>
       <label class="f">Nr. ID / Passport *<input id="ci"></label>
       <label class="f">Nr. patentës / Driving licence *<input id="cp"></label>
+      <label class="f">Datëlindja / Date of birth<input id="cd" placeholder="DD.MM.VVVV" inputmode="numeric"></label>
       <label class="f">Nr. tel / Phone *<input id="ct" type="tel" autocomplete="tel" placeholder="+355 6X XXX XXXX"></label>
       <label class="f" id="emailWrap">Email (për kopjen e kontratës · for your copy)<input id="cm" type="email" autocomplete="email" inputmode="email"></label>
-    </div>
-  </div>
-
-  <div class="card">
-    <h2><span class="step">2</span>Dokumentet · Documents</h2>
-    <p class="hint">Shtypni katrorin dhe fotografoni dokumentin. Tap a box and take a photo.</p>
-    <div class="grid">
-      <label class="photo-btn" id="pb_idF"><b>ID / Pasaportë – përpara *</b>ID / Passport – front<input type="file" accept="image/*" capture="environment" data-k="idF"></label>
-      <label class="photo-btn" id="pb_idB"><b>ID – mbrapa *</b>ID – back<input type="file" accept="image/*" capture="environment" data-k="idB"></label>
-      <label class="photo-btn" id="pb_lic"><b>Patenta *</b>Driving licence<input type="file" accept="image/*" capture="environment" data-k="lic"></label>
     </div>
   </div>
 
@@ -308,6 +315,7 @@ canvas.sig{width:100%;height:190px;display:block;touch-action:none}
 </div>
 
 <script src="assets/html2pdf.bundle.min.js"></script>
+<script src="assets/docparse.js"></script>
 <script>
 {
 /* ================= TË DHËNAT E KOMPANISË ================= */
@@ -427,7 +435,7 @@ const blobB64 = b => new Promise((res, rej) => { const f = new FileReader(); f.o
 
 /* ======================= STAFF ======================= */
 let D = null;            // rental data (from staff or link)
-const C = { idF:null, idB:null, lic:null, cars:[] };   // client data
+const C = { idF:null, idB:null, lic:null, licB:null, cars:[] };   // client data
 let padC, padK = null, staffCars = [], curSerial = null;
 const STAFF_FIELDS = ["mk","md","ng","tg","kmi","kmo","dm","om","dd","od","dep","kt","kom","eq0","eq1","eq2","eq3","t0","t1","t2","t3"];
 function saveStaff(){ const o = { f:{}, r:{}, marks, cars: staffCars, s: curSerial };
@@ -513,19 +521,60 @@ function initClient(){
     api({ action: "photos", t: D.ph }, true).then(r => { if (r.ok && r.photos.length) { C.cars = r.photos; C.fromStaff = true; } photosState = "done"; })
       .catch(() => { photosState = "done"; });
   }
-  $("client").addEventListener("input", saveClient);
+  $("client").addEventListener("input", e => { if (e.target.classList) e.target.classList.remove("auto"); saveClient(); });
   document.querySelectorAll("input[data-k]").forEach(inp => inp.addEventListener("change", async e => {
     const f = e.target.files[0]; if (!f) return; const k = e.target.dataset.k; C[k] = await loadImg(f);
+    if (k === "lic" || k === "idF") readDoc(f);
     const box = $("pb_"+k); box.classList.add("has"); let im = box.querySelector("img"); if (!im) { im = document.createElement("img"); box.appendChild(im); } im.src = C[k]; saveClient();
   }));
   $("gen").onclick = review;
 }
 const CKEY = () => "pcr_c_" + D.s;
-function saveClient(){ const o = { ce:$("ce").value, ci:$("ci").value, cp:$("cp").value, ct:$("ct").value, cm:$("cm").value, idF:C.idF, idB:C.idB, lic:C.lic };
+function saveClient(){ const o = { ce:$("ce").value, ci:$("ci").value, cp:$("cp").value, ct:$("ct").value, cm:$("cm").value, cd:$("cd").value, idF:C.idF, idB:C.idB, lic:C.lic, licB:C.licB };
   try { sessionStorage.setItem(CKEY(), JSON.stringify(o)); } catch(e) { try { sessionStorage.setItem(CKEY(), JSON.stringify(o)); } catch(e2) {} } }
+/* ---------- leximi automatik i dokumentit ---------- */
+function rotImg(file, deg, max = 2000){
+  return new Promise((res, rej) => { const url = URL.createObjectURL(file), im = new Image();
+    im.onload = () => { const k = Math.min(1, max / Math.max(im.width, im.height)), w = Math.round(im.width*k), h = Math.round(im.height*k);
+      const c = document.createElement("canvas"), side = deg % 180 !== 0; c.width = side ? h : w; c.height = side ? w : h;
+      const x = c.getContext("2d"); x.translate(c.width/2, c.height/2); x.rotate(deg * Math.PI / 180); x.drawImage(im, -w/2, -h/2, w, h);
+      URL.revokeObjectURL(url); res({ data: c.toDataURL("image/jpeg", .88), portrait: im.height > im.width }); };
+    im.onerror = rej; im.src = url; });
+}
+let ocrBusy = 0;
+async function readDoc(file){
+  if (!CO.api || typeof parseDoc !== "function") return;
+  const box = $("ocrMsg"); box.classList.remove("hidden", "err"); box.textContent = "🔎 Duke lexuar dokumentin… · Reading your document…";
+  ocrBusy++;
+  try {
+    const first = await rotImg(file, 0);
+    const tries = first.portrait ? [90, 270, 0] : [0, 180];
+    let best = {}, bestN = -1;
+    for (const deg of tries) {
+      const img = deg === 0 ? first.data : (await rotImg(file, deg)).data;
+      const r = await api({ action: "ocr", image: img }); if (!r.ok) throw new Error(r.error);
+      const p = parseDoc(r.text), n = ["mbiemri","emri","dob","nrId","nrPatente"].filter(k => p[k]).length;
+      if (n > bestN) { best = p; bestN = n; }
+      if (n >= 3) break;
+    }
+    const got = fillFromDoc(best);
+    if (got.length) box.textContent = "✓ U plotësuan: " + got.join(", ") + ". Kontrollojini më poshtë. · Filled in – please check below.";
+    else { box.classList.add("err"); box.textContent = "Dokumenti nuk u lexua dot. Bëni një foto më të qartë ose plotësojini me dorë. · Couldn't read it – retake the photo or type your details."; }
+  } catch(e) {
+    box.classList.add("err"); box.textContent = "Leximi automatik nuk punoi (interneti?). Plotësojini të dhënat me dorë. · Please type your details.";
+  } finally { ocrBusy--; saveClient(); }
+}
+function fillFromDoc(p){
+  const got = [], set = (id, v, label) => { const el = $(id); if (!v) return; if (el.value.trim() && !el.classList.contains("auto")) return;
+    el.value = v; el.classList.add("auto"); el.classList.remove("bad"); got.push(label); };
+  const title = s => s.toLowerCase().replace(/(^|[\s'-])(\S)/g, (m, a, b) => a + b.toUpperCase());
+  const name = [p.emri, p.mbiemri].filter(Boolean).map(title).join(" ");
+  set("ce", name, "Emri"); set("ci", p.nrId, "Nr. ID"); set("cp", p.nrPatente, "Nr. patentës"); set("cd", p.dob, "Datëlindja");
+  return got;
+}
 function restoreClient(){ let o; try { o = JSON.parse(sessionStorage.getItem(CKEY()) || "null"); } catch(e) {} if (!o) return;
-  ["ce","ci","cp","ct","cm"].forEach(id => $(id).value = o[id] || "");
-  ["idF","idB","lic"].forEach(k => { if (!o[k]) return; C[k] = o[k]; const box = $("pb_"+k); box.classList.add("has"); const im = document.createElement("img"); im.src = o[k]; box.appendChild(im); });
+  ["ce","ci","cp","ct","cm","cd"].forEach(id => $(id).value = o[id] || "");
+  ["idF","idB","lic","licB"].forEach(k => { if (!o[k]) return; C[k] = o[k]; const box = $("pb_"+k); box.classList.add("has"); const im = document.createElement("img"); im.src = o[k]; box.appendChild(im); });
 }
 
 let photosState = "done";
@@ -533,15 +582,15 @@ async function review(){
   if (photosState === "loading") { $("gen").disabled = true; $("cmsg").style.color = "var(--muted)"; $("cmsg").textContent = "Duke ngarkuar fotot e makinës…";
     while (photosState === "loading") await new Promise(r => setTimeout(r, 300));
     $("gen").disabled = false; $("cmsg").style.color = ""; $("cmsg").textContent = ""; }
+  if (ocrBusy) { $("cmsg").textContent = "Prisni pak, po lexohet dokumenti… · Reading document, please wait…"; return; }
   const req = ["ce","ci","cp","ct"]; let bad = false;
   req.forEach(id => { const b = !$(id).value.trim(); $(id).classList.toggle("bad", b); bad = bad || b; });
   const fail = m => { $("cmsg").textContent = m; };
   if (bad) return fail("Plotësoni fushat e shënuara me të kuqe. · Please fill the fields in red.");
-  if (!C.idF) return fail("Fotografoni ID-në ose pasaportën. · Please photograph your ID / passport.");
-  if (!C.idB) return fail("Fotografoni ID-në nga mbrapa. · Please photograph the back of your ID.");
-  if (!C.lic) return fail("Fotografoni patentën. · Please photograph your driving licence.");
+  if (!C.lic) return fail("Fotografoni patentën nga përpara. · Please photograph the front of your driving licence.");
+  if (!C.licB) return fail("Fotografoni patentën nga mbrapa. · Please photograph the back of your driving licence.");
   $("cmsg").textContent = "";
-  C.emri = $("ce").value.trim(); C.id = $("ci").value.trim(); C.pat = $("cp").value.trim(); C.tel = $("ct").value.trim(); C.email = $("cm").value.trim();
+  C.emri = $("ce").value.trim(); C.id = $("ci").value.trim(); C.pat = $("cp").value.trim(); C.tel = $("ct").value.trim(); C.email = $("cm").value.trim(); C.dob = $("cd").value.trim();
   C.sig = null; C.time = null; pdfBlob = null;
   $("doc").innerHTML = renderDoc(D, C);
   $("view").classList.remove("signed"); $("agreeBox").classList.remove("hidden"); $("signArea").classList.add("hidden"); $("amsg").textContent = "";
@@ -602,7 +651,7 @@ function renderDoc(d, c){
 
   <div class="g">
     <div class="b"><div class="t">Qiramarrësi / Customer info</div>
-      ${ln("Emër Mbiemër / Name Surname:", c.emri)}${ln("Nr. ID / Passport:", c.id)}${ln("Nr. patentës / Driving licence nr:", c.pat)}${ln("Nr. tel / Tel. number:", c.tel)}
+      ${ln("Emër Mbiemër / Name Surname:", c.emri)}${ln("Datëlindja / Date of birth:", c.dob)}${ln("Nr. ID / Passport:", c.id)}${ln("Nr. patentës / Driving licence nr:", c.pat)}${ln("Nr. tel / Tel. number:", c.tel)}
       ${ln("Komente / Reviews:", d.ko2)}</div>
     <div class="b"><div class="t">Identifikimi automjetit / Vehicle info</div>
       ${ln("Marka / Model:", d.mk)}${ln("Model / Type:", d.md)}${ln("Ngjyra / Colour:", d.ng)}${ln("Targa / Plate:", d.tg)}
@@ -646,9 +695,10 @@ function renderDoc(d, c){
   <div class="ax">
     <h3>Aneks 1 – Dokumentet e klientit / Customer documents</h3>
     <div class="ph">
-      <figure><img src="${c.idF}"><figcaption>ID / Pasaportë – përpara</figcaption></figure>
-      <figure><img src="${c.idB}"><figcaption>ID / Pasaportë – mbrapa</figcaption></figure>
-      <figure><img src="${c.lic}"><figcaption>Patenta / Driving licence</figcaption></figure>
+      <figure><img src="${c.lic}"><figcaption>Patenta – përpara / Driving licence – front</figcaption></figure>
+      <figure><img src="${c.licB}"><figcaption>Patenta – mbrapa / Driving licence – back</figcaption></figure>
+      ${c.idF ? `<figure><img src="${c.idF}"><figcaption>ID / Pasaportë</figcaption></figure>` : ""}
+      ${c.idB ? `<figure><img src="${c.idB}"><figcaption>ID – mbrapa</figcaption></figure>` : ""}
     </div>
     ${c.cars.length ? `<h3>Aneks 2 – Gjendja e automjetit në dorëzim / Vehicle condition (${esc(d.tg)})${c.fromStaff ? " – foto nga stafi" : ""}</h3><div class="ph">${photos}</div>` : ""}
     <p class="small" style="margin-top:8px">${c.sig ? `Dokumenti u plotësua dhe u firmos elektronikisht më ${ts}. ` : ""}Serial nr. ${esc(d.s)}.</p>

@@ -38,8 +38,8 @@ Del ikona **Perfect Car** si aplikacion.
 > Nëse faqja rifreskohet (p.sh. pas kamerës), të dhënat nuk humbin, sepse ruhen automatikisht.
 
 ### Klienti
-1. Shkruan emrin, nr. e ID-së ose pasaportës, nr. e patentës dhe telefonin.
-2. Fotografon **ID-në përpara dhe mbrapa** dhe **patentën**.
+1. Fotografon **patentën përpara dhe mbrapa**. ID-ja ose pasaporta janë opsionale.
+2. **Emri, nr. ID, nr. i patentës dhe datëlindja plotësohen vetë** nga fotoja (fushat dalin me të verdhë). Klienti i kontrollon dhe shkruan vetëm telefonin.
 3. Shtyp **"Vazhdo: shiko kontratën"** dhe lexon kontratën.
 4. Në fund del pyetja **"A jeni dakord me kontratën?"**. Shtyp **PO**.
 5. Firmos me gisht dhe shtyp **"Firmos kontratën"**.
@@ -83,15 +83,16 @@ Script-i punon në llogarinë tënde Google (mund të jetë email-i personal). E
 1. Hyr në **script.google.com** me email-in tënd dhe shtyp **New project**.
 2. Fshi gjithçka që është në editor dhe ngjit përmbajtjen e skedarit [`google-apps-script/Code.gs`](google-apps-script/Code.gs).
 3. Email-et ku vijnë kontratat janë te `COMPANY_EMAILS` (tani: info@perfectcarrentaltirana.com dhe lomilomi727@gmail.com).
-4. Shtyp 💾 **Save**. Pastaj zgjidh funksionin **`provo`** dhe shtyp **▶ Run**.
+4. Në të majtë shtyp **Services +**, zgjidh **Drive API** dhe **Add**. Kjo duhet për leximin automatik të patentës.
+5. Shtyp 💾 **Save**. Pastaj zgjidh funksionin **`provo`** dhe shtyp **▶ Run**.
    - Google kërkon leje. Shtyp **Review permissions**, zgjidh email-in tënd, pastaj **Advanced → Go to … (unsafe) → Allow**.
    - Kjo është normale për script-et që shkruan vetë. Script-i ka qasje vetëm në Drive dhe dërgim email-esh në llogarinë tënde.
-5. Lart djathtas shtyp **Deploy → New deployment**:
+6. Lart djathtas shtyp **Deploy → New deployment**:
    - ⚙️ **Select type → Web app**
    - **Execute as:** *Me*
    - **Who has access:** *Anyone*
    - **Deploy**, pastaj kopjo **Web app URL** (fillon me `https://script.google.com/macros/s/...`).
-6. Te `index.html`, te blloku `CO`, vendos linkun: `api: "https://script.google.com/macros/s/.../exec",`
+7. Te `index.html`, te blloku `CO`, vendos linkun: `api: "https://script.google.com/macros/s/.../exec",`
 
 ### Ku ruhen
 ```
@@ -102,6 +103,11 @@ Google Drive
     │       └── Ervis_Mydini_20-11-2026.pdf
     └── _Fotot e makinave (stafi)
 ```
+
+### Leximi automatik i dokumenteve
+- Patentat me fusha të numëruara: Shqipëri, Kosovë, BE, MB dhe shumica e SHBA-së (1. mbiemri, 2. emri, 3. datëlindja, 4d. nr. personal, 5. nr. i patentës).
+- Pasaportat dhe ID-të me rreshtat `<<<` (MRZ), për çdo vend.
+- Nëse fotoja është e turbullt ose me reflektim, fushat mbeten bosh ose me gabim. Klienti i kontrollon gjithmonë.
 
 ### Kufijtë
 - Gmail falas lejon rreth **100 email në ditë**. Çdo kontratë dërgon 1–2 email.

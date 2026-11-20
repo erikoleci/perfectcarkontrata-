@@ -2,6 +2,7 @@
  * Perfect Car Rental – ruajtja e kontratave në Google Drive dhe dërgimi me email.
  *
  * Udhëzimet e plota janë në README.md (seksioni "Google Drive + Email").
+ * KUJDES: duhet shtuar shërbimi "Drive API" (Services +) që të punojë leximi i patentës.
  * Ndrysho vetëm vlerat te CONFIG.
  */
 const CONFIG = {
@@ -39,6 +40,18 @@ function blobFromDataUrl_(dataUrl, name) {
 }
 function cleanToken_(t) { return String(t || "").replace(/[^A-Za-z0-9]/g, "").slice(0, 40); }
 
+/* Lexon tekstin nga një foto (OCR i Google Drive). Skedari i përkohshëm fshihet menjëherë. */
+function ocr_(blob) {
+  let id;
+  if (Drive.Files.insert) {                       // Drive API v2
+    id = Drive.Files.insert({ title: "ocr-tmp", mimeType: blob.getContentType() }, blob, { ocr: true, ocrLanguage: "en" }).id;
+  } else {                                        // Drive API v3
+    id = Drive.Files.create({ name: "ocr-tmp", mimeType: "application/vnd.google-apps.document" }, blob, { ocrLanguage: "en" }).id;
+  }
+  try { return DocumentApp.openById(id).getBody().getText(); }
+  finally { try { DriveApp.getFileById(id).setTrashed(true); } catch (e) {} }
+}
+
 /* ---------- GET: fotot e makinës për linkun ---------- */
 function doGet(e) {
   try {
@@ -72,6 +85,10 @@ function doPost(e) {
       const f = folder_(photosFolder_(), token);
       body.photos.slice(0, 12).forEach((d, i) => f.createFile(blobFromDataUrl_(d, "foto-" + String(i + 1).padStart(2, "0") + ".jpg")));
       return json_({ ok: true });
+    }
+
+    if (body.action === "ocr") {
+      return json_({ ok: true, text: ocr_(blobFromDataUrl_(body.image, "doc.jpg")) });
     }
 
     if (body.action === "contract") {
@@ -127,5 +144,6 @@ function doPost(e) {
 /* Ekzekutoje një herë nga editori (▶ Run) që Google të kërkojë lejet. */
 function provo() {
   root_();
+  Logger.log("Drive API: " + (typeof Drive !== "undefined" ? "OK" : "MUNGON – shto Services → Drive API"));
   Logger.log("Gati! Dosja: " + CONFIG.ROOT_FOLDER + " · Email: " + CONFIG.COMPANY_EMAILS.join(", "));
 }
