@@ -37,13 +37,12 @@ Del ikona **Perfect Car** si aplikacion.
 
 > Nëse faqja rifreskohet (p.sh. pas kamerës), të dhënat nuk humbin, sepse ruhen automatikisht.
 
-### Klienti
-1. Fotografon **patentën përpara dhe mbrapa**. ID-ja ose pasaporta janë opsionale.
-2. **Emri, nr. ID, nr. i patentës dhe datëlindja plotësohen vetë** nga fotoja (fushat dalin me të verdhë). Klienti i kontrollon dhe shkruan vetëm telefonin.
-3. Shtyp **"Vazhdo: shiko kontratën"** dhe lexon kontratën.
-4. Në fund del pyetja **"A jeni dakord me kontratën?"**. Shtyp **PO**.
-5. Firmos me gisht dhe shtyp **"Firmos kontratën"**.
-6. Shtyp **"Dërgo kontratën"**, zgjedh WhatsApp dhe ia dërgon Perfect Car Rental. Mund edhe ta shkarkojë ose ta printojë.
+### Klienti (4 hapa, një ekran për secilin)
+1. **Dokumentet:** fotografon patentën përpara dhe mbrapa (ID/pasaporta opsionale). Të dhënat lexohen vetë. Pastaj **Vazhdo**.
+2. **Të dhënat:** "A janë të sakta të dhënat tuaja?". Sheh emrin, datëlindjen, nr. ID dhe nr. e patentës, i korrigjon nëse duhet, shton telefonin dhe shtyp **Po, janë të sakta**.
+3. **Kontrata:** e lexon. "A jeni dakord?": **PO** çon te firma; **JO** e lë në të njëjtin ekran.
+4. **Firma:** firmos me gisht dhe shtyp **Firmos kontratën**.
+5. **✓ Përfundoi:** kontrata dërgohet vetë me email dhe ruhet në Drive. Mund edhe të dërgohet në WhatsApp, të shkarkohet ose të printohet.
 
 ### PDF-ja
 - Emri i skedarit: **Emri_Mbiemri_DD-MM-VVVV.pdf**, p.sh. `Ervis_Mydini_20-11-2026.pdf`.

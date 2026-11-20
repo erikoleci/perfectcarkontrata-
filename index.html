@@ -64,11 +64,31 @@ canvas.sig{width:100%;height:190px;display:block;touch-action:none}
 .check input{width:24px;height:24px;margin:1px 0 0;flex:none}
 .linkbox{word-break:break-all;background:var(--bg);border-radius:10px;padding:10px 12px;font-size:13px;margin-top:10px}
 .hidden{display:none!important}
+.stepper{position:sticky;top:0;z-index:6;background:#0d0d0d;padding:10px max(4vw,16px) 12px}
+.stepper .bar{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-width:790px;margin:0 auto}
+.stepper .bar i{height:6px;border-radius:3px;background:#3a3a3a;transition:background .3s}
+.stepper .bar i.ok{background:var(--acc)}
+.stepper .bar i.on{background:linear-gradient(90deg,var(--acc) 50%,#3a3a3a 50%);background-size:200% 100%;animation:fillbar .5s ease-out forwards}
+@keyframes fillbar{from{background-position:100% 0}to{background-position:0 0}}
+@media(prefers-reduced-motion:reduce){.stepper .bar i.on{animation:none;background:var(--acc)}}
+.stepper .lbl{max-width:790px;margin:8px auto 0;color:#fff;font-size:14px;font-weight:600}
+.btn.big{min-height:56px;font-size:18px}
+.navrow{display:flex;gap:10px;margin-top:4px}
+.navrow .btn.main{flex:1}
+.yesno{display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-top:6px}
+.linkbtn{background:none;border:0;color:var(--muted);font:inherit;font-size:15px;padding:12px 0 0;cursor:pointer;text-decoration:underline}
+details.more{margin-top:12px}
+details.more summary{cursor:pointer;color:var(--muted);font-size:15px;padding:6px 0;min-height:32px}
+.card.wide{max-width:760px;margin:16px auto}
+.card.done{max-width:760px;margin:16px auto;text-align:center;border:2px solid var(--ok)}
+.card.done .tick{width:64px;height:64px;border-radius:50%;background:var(--ok);color:#fff;font-size:36px;line-height:64px;margin:4px auto 10px}
+.card.done h2{font-size:22px}
+canvas.sig.big{height:260px}
+@media(max-width:780px){.card.wide,.card.done{margin:16px 8px}}
 .ocrmsg{margin-top:12px;padding:10px 14px;border-radius:10px;background:var(--accs);font-size:15px;font-weight:600}
 .ocrmsg.err{background:#fdecea;color:var(--err)}
 input.auto{background:#fff8d6;border-color:#e0b800}
 .agreebox{max-width:760px;margin:16px auto 60px;border:2px solid var(--acc)}
-#view:not(.signed) .signed-only{display:none}
 @media(max-width:780px){.agreebox{margin:16px 8px 60px}}
 .dmgwrap{max-width:520px;margin:0 auto;border:1px solid var(--line);border-radius:12px;background:#fff;padding:6px}
 .dmgwrap svg{width:100%;height:auto;display:block;touch-action:manipulation;cursor:crosshair}
@@ -122,7 +142,7 @@ input.auto{background:#fff8d6;border-color:#e0b800}
 
 @media print{
   body{background:#fff}
-  header.top,main,.stickybar,.agreebox,#vmsg{display:none!important}
+  header.top,main,.stickybar,.agreebox,.stepper,.card{display:none!important}
   .scaler{transform:none!important;margin:0}
   .docouter{height:auto!important;overflow:visible;width:auto!important}
   #doc{box-shadow:none;padding:0;width:100%}
@@ -248,69 +268,103 @@ input.auto{background:#fff8d6;border-color:#e0b800}
   </div>
 </main>
 
-<!-- =================== FAQJA E KLIENTIT =================== -->
+<!-- =================== KLIENTI: HAP PAS HAPI =================== -->
+<div id="stepper" class="stepper hidden">
+  <div class="bar"><i></i><i></i><i></i><i></i></div>
+  <div class="lbl" id="stepLbl"></div>
+</div>
+
 <main id="client" class="hidden">
-  <div class="card">
-    <h2>Mirë se vini!</h2>
-    <p class="hint">Plotësoni të dhënat, shikoni kontratën, pranojeni dhe firmosni. · Fill in your details, review the contract, accept and sign.</p>
-    <div class="summary" id="sum"></div>
-  </div>
-
-  <div class="card">
-    <h2><span class="step">1</span>Dokumentet · Documents</h2>
-    <p class="hint">Vendoseni dokumentin në tavolinë, pa dritë direkte mbi të, dhe fotografojeni të gjithë. Të dhënat plotësohen vetë. · Place the document on a table, avoid glare, and photograph it fully – your details fill in automatically.</p>
-    <div class="grid">
-      <label class="photo-btn" id="pb_lic"><b>Patenta – përpara *</b>Driving licence – front<input type="file" accept="image/*" capture="environment" data-k="lic"></label>
-      <label class="photo-btn" id="pb_licB"><b>Patenta – mbrapa *</b>Driving licence – back<input type="file" accept="image/*" capture="environment" data-k="licB"></label>
-      <label class="photo-btn" id="pb_idF"><b>ID / Pasaportë</b>ID / Passport (opsionale)<input type="file" accept="image/*" capture="environment" data-k="idF"></label>
-      <label class="photo-btn" id="pb_idB"><b>ID – mbrapa</b>ID – back (opsionale)<input type="file" accept="image/*" capture="environment" data-k="idB"></label>
+  <!-- HAPI 1: dokumentet -->
+  <section data-step="1">
+    <div class="card">
+      <h2>Mirë se vini! · Welcome!</h2>
+      <p class="hint">Fotografoni patentën, konfirmoni të dhënat, lexoni kontratën dhe firmosni. Zgjat rreth 2 minuta.</p>
+      <div class="summary" id="sum"></div>
     </div>
-    <div id="ocrMsg" class="ocrmsg hidden"></div>
-  </div>
-
-  <div class="card">
-    <h2><span class="step">2</span>Të dhënat tuaja · Your details</h2>
-    <p class="hint">Kontrolloni të dhënat që u lexuan nga dokumenti dhe korrigjoni nëse duhet. · Check the details read from your document.</p>
-    <div class="grid" style="margin-top:10px">
-      <label class="f">Emër Mbiemër / Name Surname *<input id="ce" autocomplete="name"></label>
-      <label class="f">Nr. ID / Passport *<input id="ci"></label>
-      <label class="f">Nr. patentës / Driving licence *<input id="cp"></label>
-      <label class="f">Datëlindja / Date of birth<input id="cd" placeholder="DD.MM.VVVV" inputmode="numeric"></label>
-      <label class="f">Nr. tel / Phone *<input id="ct" type="tel" autocomplete="tel" placeholder="+355 6X XXX XXXX"></label>
-      <label class="f" id="emailWrap">Email (për kopjen e kontratës · for your copy)<input id="cm" type="email" autocomplete="email" inputmode="email"></label>
+    <div class="card">
+      <h2>Fotografoni patentën · Photograph your licence</h2>
+      <p class="hint">Vendoseni në tavolinë, pa dritë direkte mbi të, dhe fotografojeni të gjithë. Të dhënat tuaja plotësohen vetë. · Place it on a table, avoid glare – your details fill in automatically.</p>
+      <div class="grid">
+        <label class="photo-btn" id="pb_lic"><b>Patenta – përpara *</b>Driving licence – front<input type="file" accept="image/*" capture="environment" data-k="lic"></label>
+        <label class="photo-btn" id="pb_licB"><b>Patenta – mbrapa *</b>Driving licence – back<input type="file" accept="image/*" capture="environment" data-k="licB"></label>
+      </div>
+      <details class="more"><summary>+ ID / Pasaportë (opsionale)</summary>
+        <div class="grid" style="margin-top:10px">
+          <label class="photo-btn" id="pb_idF"><b>ID / Pasaportë</b>ID / Passport<input type="file" accept="image/*" capture="environment" data-k="idF"></label>
+          <label class="photo-btn" id="pb_idB"><b>ID – mbrapa</b>ID – back<input type="file" accept="image/*" capture="environment" data-k="idB"></label>
+        </div>
+      </details>
+      <div id="ocrMsg" class="ocrmsg hidden"></div>
     </div>
-  </div>
+    <button class="btn main full big" type="button" id="next1">Vazhdo · Continue →</button>
+    <div class="msg" id="msg1"></div>
+  </section>
 
-  <button class="btn main full" type="button" id="gen" style="min-height:56px;font-size:18px">Vazhdo: shiko kontratën · Continue</button>
-  <div class="msg" id="cmsg"></div>
-</main>
-
-<!-- =================== KONTRATA =================== -->
-<div id="view" class="hidden">
-  <div class="stickybar">
-    <button class="btn wa signed-only" type="button" id="send">Dërgo kontratën · Send</button>
-    <button class="btn signed-only" type="button" id="dl">Shkarko PDF</button>
-    <button class="btn signed-only" type="button" id="prt">Printo</button>
-    <button class="btn" type="button" id="back">← Ndrysho</button>
-  </div>
-  <p class="okmsg" id="vmsg" style="text-align:center;margin:10px 12px 0"></p>
-  <div class="docouter" id="docouter"><div class="scaler" id="scaler"><div id="doc"></div></div></div>
-  <div class="card agreebox" id="agreeBox">
-    <h2>A jeni dakord me kontratën? · Do you agree with the contract?</h2>
-    <p class="hint">Duke shtypur PO, konfirmoj që të dhënat janë të sakta, pranoj kushtet e kontratës dhe përpunimin e të dhënave të mia personale nga Perfect Car Rental për këtë qira. <i>By pressing YES I confirm the data is correct and accept the contract and the processing of my personal data for this rental.</i></p>
-    <div class="row">
-      <button class="btn main" type="button" id="yes" style="min-height:56px;font-size:18px;flex:1">PO, jam dakord · YES</button>
-      <button class="btn" type="button" id="no" style="min-height:56px">JO · NO</button>
-    </div>
-    <div id="signArea" class="hidden">
-      <h2 style="margin-top:18px">Firmosni me gisht · Sign with your finger</h2>
-      <div class="sigwrap"><canvas class="sig" id="sigK"></canvas><span>Firmo këtu · Sign here</span></div>
-      <div class="row">
-        <button class="btn" type="button" id="clrK">Fshi · Clear</button>
-        <button class="btn main" type="button" id="signBtn" style="flex:1">Firmos kontratën · Sign</button>
+  <!-- HAPI 2: konfirmimi i të dhënave -->
+  <section data-step="2" class="hidden">
+    <div class="card">
+      <h2>A janë të sakta të dhënat tuaja? · Are your details correct?</h2>
+      <p class="hint" id="hint2">Këto të dhëna u lexuan nga patenta. Kontrollojini, korrigjoni nëse ka gabim dhe shtoni numrin e telefonit.</p>
+      <div class="grid" style="margin-top:10px">
+        <label class="f">Emër Mbiemër / Name Surname *<input id="ce" autocomplete="name"></label>
+        <label class="f">Datëlindja / Date of birth<input id="cd" placeholder="DD.MM.VVVV" inputmode="numeric"></label>
+        <label class="f">Nr. ID / Passport *<input id="ci"></label>
+        <label class="f">Nr. patentës / Driving licence *<input id="cp"></label>
+        <label class="f">Nr. tel / Phone *<input id="ct" type="tel" autocomplete="tel" placeholder="+355 6X XXX XXXX"></label>
+        <label class="f" id="emailWrap">Email (për kopjen e kontratës · for your copy)<input id="cm" type="email" autocomplete="email" inputmode="email"></label>
       </div>
     </div>
+    <div class="navrow">
+      <button class="btn" type="button" id="back2">← Kthehu</button>
+      <button class="btn main big" type="button" id="gen">Po, janë të sakta · Vazhdo →</button>
+    </div>
+    <div class="msg" id="cmsg"></div>
+  </section>
+</main>
+
+<!-- =================== KONTRATA / FIRMA / PËRFUNDIMI =================== -->
+<div id="view" class="hidden">
+  <div class="stickybar hidden" id="doneBar">
+    <button class="btn wa" type="button" id="send">Dërgo kontratën · Send</button>
+    <button class="btn" type="button" id="dl">Shkarko PDF</button>
+    <button class="btn" type="button" id="prt">Printo</button>
+  </div>
+
+  <div class="card done hidden" id="doneCard">
+    <div class="tick">✓</div>
+    <h2>Kontrata u firmos! · Contract signed!</h2>
+    <p class="okmsg" id="vmsg"></p>
+  </div>
+
+  <div class="card wide hidden" id="intro3">
+    <h2>Lexoni kontratën · Read the contract</h2>
+    <p class="hint">Kjo është kontrata me të dhënat tuaja. Lexojeni dhe në fund zgjidhni PO ose JO.</p>
+  </div>
+
+  <div class="docouter hidden" id="docouter"><div class="scaler" id="scaler"><div id="doc"></div></div></div>
+
+  <div class="card agreebox hidden" id="agreeBox">
+    <h2>A jeni dakord me kontratën? · Do you agree with the contract?</h2>
+    <p class="hint">Duke shtypur PO, konfirmoj që të dhënat janë të sakta, pranoj kushtet e kontratës dhe përpunimin e të dhënave të mia personale nga Perfect Car Rental për këtë qira. <i>By pressing YES I confirm the data is correct and accept the contract and the processing of my personal data for this rental.</i></p>
+    <div class="yesno">
+      <button class="btn main big" type="button" id="yes">PO · YES</button>
+      <button class="btn big" type="button" id="no">JO · NO</button>
+    </div>
     <div class="msg" id="amsg"></div>
+    <button class="linkbtn" type="button" id="back">← Ndrysho të dhënat</button>
+  </div>
+
+  <div class="card wide hidden" id="signCard">
+    <h2>Firmosni me gisht · Sign with your finger</h2>
+    <p class="hint" id="signHint"></p>
+    <div class="sigwrap"><canvas class="sig big" id="sigK"></canvas><span>Firmo këtu · Sign here</span></div>
+    <div class="navrow">
+      <button class="btn" type="button" id="clrK">Fshi · Clear</button>
+      <button class="btn main big" type="button" id="signBtn">Firmos kontratën · Sign ✓</button>
+    </div>
+    <div class="msg" id="smsg2"></div>
+    <button class="linkbtn" type="button" id="back4">← Kthehu te kontrata</button>
   </div>
 </div>
 
@@ -528,6 +582,7 @@ function initClient(){
     const box = $("pb_"+k); box.classList.add("has"); let im = box.querySelector("img"); if (!im) { im = document.createElement("img"); box.appendChild(im); } im.src = C[k]; saveClient();
   }));
   $("gen").onclick = review;
+  setStep(1);
 }
 const CKEY = () => "pcr_c_" + D.s;
 function saveClient(){ const o = { ce:$("ce").value, ci:$("ci").value, cp:$("cp").value, ct:$("ct").value, cm:$("cm").value, cd:$("cd").value, idF:C.idF, idB:C.idB, lic:C.lic, licB:C.licB };
@@ -558,7 +613,7 @@ async function readDoc(file){
       if (n >= 3) break;
     }
     const got = fillFromDoc(best);
-    if (got.length) box.textContent = "✓ U plotësuan: " + got.join(", ") + ". Kontrollojini më poshtë. · Filled in – please check below.";
+    if (got.length) box.textContent = "✓ U lexuan: " + got.join(", ") + ". Shtypni Vazhdo për t'i kontrolluar. · Read successfully – press Continue.";
     else { box.classList.add("err"); box.textContent = "Dokumenti nuk u lexua dot. Bëni një foto më të qartë ose plotësojini me dorë. · Couldn't read it – retake the photo or type your details."; }
   } catch(e) {
     box.classList.add("err"); box.textContent = "Leximi automatik nuk punoi (interneti?). Plotësojini të dhënat me dorë. · Please type your details.";
@@ -578,41 +633,69 @@ function restoreClient(){ let o; try { o = JSON.parse(sessionStorage.getItem(CKE
 }
 
 let photosState = "done";
+const STEP_NAMES = ["Dokumentet · Documents", "Të dhënat · Details", "Kontrata · Contract", "Firma · Signature"];
+function setStep(n){
+  $("stepper").classList.remove("hidden");
+  $("stepper").querySelectorAll(".bar i").forEach((el, i) => el.className = i < n - 1 ? "ok" : i === n - 1 ? "on" : "");
+  $("stepLbl").textContent = n <= 4 ? `Hapi ${n} nga 4 · ${STEP_NAMES[n-1]}` : "✓ Përfundoi · Done";
+  document.querySelectorAll("#client [data-step]").forEach(sec => sec.classList.toggle("hidden", +sec.dataset.step !== n));
+  $("client").classList.toggle("hidden", n > 2); $("view").classList.toggle("hidden", n < 3);
+  const show = (id, on) => $(id).classList.toggle("hidden", !on);
+  show("intro3", n === 3); show("docouter", n === 3 || n === 5); show("agreeBox", n === 3);
+  show("signCard", n === 4); show("doneCard", n === 5); show("doneBar", n === 5);
+  window.scrollTo(0, 0); if (n === 3 || n === 5) { fit(); setTimeout(fit, 300); }
+}
+const wait = cond => new Promise(r => { const t = setInterval(() => { if (cond()) { clearInterval(t); r(); } }, 250); });
+
+/* Hapi 1 → 2 */
+$("next1").onclick = async () => {
+  const m = $("msg1");
+  if (!C.lic) { m.textContent = "Fotografoni patentën nga përpara. · Please photograph the front of your licence."; return; }
+  if (!C.licB) { m.textContent = "Fotografoni patentën nga mbrapa. · Please photograph the back of your licence."; return; }
+  if (ocrBusy) { $("next1").disabled = true; m.style.color = "var(--muted)"; m.textContent = "Prisni pak, po lexohet patenta… · Reading your licence…";
+    await wait(() => !ocrBusy); $("next1").disabled = false; m.style.color = ""; }
+  m.textContent = "";
+  const auto = document.querySelectorAll("#client input.auto").length;
+  $("hint2").textContent = auto ? "Këto të dhëna u lexuan nga patenta (me të verdhë). Kontrollojini, korrigjoni nëse ka gabim dhe shtoni numrin e telefonit."
+                                : "Plotësoni të dhënat tuaja dhe numrin e telefonit. · Please fill in your details.";
+  setStep(2);
+};
+$("back2").onclick = () => setStep(1);
+
+/* Hapi 2 → 3 */
 async function review(){
   if (photosState === "loading") { $("gen").disabled = true; $("cmsg").style.color = "var(--muted)"; $("cmsg").textContent = "Duke ngarkuar fotot e makinës…";
-    while (photosState === "loading") await new Promise(r => setTimeout(r, 300));
-    $("gen").disabled = false; $("cmsg").style.color = ""; $("cmsg").textContent = ""; }
-  if (ocrBusy) { $("cmsg").textContent = "Prisni pak, po lexohet dokumenti… · Reading document, please wait…"; return; }
+    await wait(() => photosState !== "loading"); $("gen").disabled = false; $("cmsg").style.color = ""; $("cmsg").textContent = ""; }
   const req = ["ce","ci","cp","ct"]; let bad = false;
   req.forEach(id => { const b = !$(id).value.trim(); $(id).classList.toggle("bad", b); bad = bad || b; });
-  const fail = m => { $("cmsg").textContent = m; };
-  if (bad) return fail("Plotësoni fushat e shënuara me të kuqe. · Please fill the fields in red.");
-  if (!C.lic) return fail("Fotografoni patentën nga përpara. · Please photograph the front of your driving licence.");
-  if (!C.licB) return fail("Fotografoni patentën nga mbrapa. · Please photograph the back of your driving licence.");
+  if (bad) { $("cmsg").textContent = "Plotësoni fushat e shënuara me të kuqe. · Please fill the fields in red."; return; }
   $("cmsg").textContent = "";
   C.emri = $("ce").value.trim(); C.id = $("ci").value.trim(); C.pat = $("cp").value.trim(); C.tel = $("ct").value.trim(); C.email = $("cm").value.trim(); C.dob = $("cd").value.trim();
-  C.sig = null; C.time = null; pdfBlob = null;
-  $("doc").innerHTML = renderDoc(D, C);
-  $("view").classList.remove("signed"); $("agreeBox").classList.remove("hidden"); $("signArea").classList.add("hidden"); $("amsg").textContent = "";
-  $("vmsg").style.color = ""; $("vmsg").textContent = "Lexoni kontratën dhe në fund shtypni PO për ta firmosur. · Read the contract, then press YES below.";
-  $("client").classList.add("hidden"); $("view").classList.remove("hidden"); window.scrollTo(0,0);
-  setTitle();
-  fit(); setTimeout(fit, 300);
+  C.sig = null; C.time = null; pdfBlob = null; C.uploaded = false;
+  $("doc").innerHTML = renderDoc(D, C); $("amsg").textContent = "";
+  setTitle(); setStep(3);
 }
 function setTitle(){ const t = C.time || new Date();
   const name = C.emri.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Za-z0-9]+/g, "_").replace(/^_|_$/g, "") || "Klienti";
   document.title = `${name}_${pad(t.getDate())}-${pad(t.getMonth()+1)}-${t.getFullYear()}`; }
-$("yes").onclick = () => { $("signArea").classList.remove("hidden"); $("yes").textContent = "✓ Jeni dakord · Agreed";
+
+/* Hapi 3: PO → firma, JO → mbetet këtu */
+$("yes").onclick = () => {
+  $("signHint").textContent = `${C.emri} · Kontrata nr. ${D.s} · ${D.mk} ${D.md} (${D.tg})`;
+  setStep(4);
   if (!padK) { padK = makePad($("sigK")); $("clrK").onclick = () => padK.clear(); }
-  $("signArea").scrollIntoView({ behavior: "smooth", block: "center" }); };
-$("no").onclick = () => $("back").click();
+};
+$("no").onclick = () => { $("amsg").textContent = "Kontrata nuk u pranua. Për pyetje flisni me stafin. · Contract not accepted."; };
+$("back").onclick = () => { pdfBlob = null; C.sig = null; C.uploaded = false; document.title = "Perfect Car Rental · Autorizim"; setStep(2); };
+$("back4").onclick = () => setStep(3);
+
+/* Hapi 4 → përfundimi */
 $("signBtn").onclick = () => {
-  if (!padK || padK.isEmpty()) { $("amsg").textContent = "Mungon firma. · Signature is missing."; return; }
-  $("amsg").textContent = ""; C.sig = padK.full(); C.time = new Date(); pdfBlob = null;
+  if (!padK || padK.isEmpty()) { $("smsg2").textContent = "Mungon firma. · Signature is missing."; return; }
+  $("smsg2").textContent = ""; C.sig = padK.full(); C.time = new Date(); pdfBlob = null;
   $("doc").innerHTML = renderDoc(D, C); setTitle();
-  $("agreeBox").classList.add("hidden"); $("view").classList.add("signed");
-  $("vmsg").style.color = ""; $("vmsg").textContent = "✓ Kontrata u firmos. Shtypni “Dërgo kontratën” lart. · Signed! Press “Send” above.";
-  window.scrollTo(0,0); fit(); setTimeout(fit, 300);
+  $("vmsg").style.color = ""; $("vmsg").textContent = CO.api ? "" : "Shtypni “Dërgo kontratën” për ta dërguar. · Press “Send” to share it.";
+  setStep(5);
   if (CO.api) autoSend();
 };
 async function autoSend(){
@@ -624,7 +707,7 @@ async function autoSend(){
       car: `${D.mk} ${D.md}`, plate: D.tg, period: `${fmtD(D.dm)} ${D.om || ""} – ${fmtD(D.dd)} ${D.od || ""}` });
     if (!r.ok) throw new Error(r.error);
     C.uploaded = true; $("vmsg").style.color = "";
-    $("vmsg").textContent = "✓ Kontrata u firmos dhe u dërgua te Perfect Car Rental" + (C.email ? " dhe në email-in tuaj." : ".") + " · Contract signed and sent.";
+    $("vmsg").textContent = "📧 U dërgua te Perfect Car Rental" + (C.email ? " dhe në email-in tuaj." : ".") + " · Sent.";
   } catch(e) {
     $("vmsg").style.color = "var(--err)";
     $("vmsg").textContent = "Kontrata u firmos, por nuk u dërgua automatikisht (interneti?). Shtypni “Dërgo kontratën”. · Please press “Send”.";
@@ -740,7 +823,6 @@ $("send").onclick = () => busy($("send"), async () => {
 });
 $("dl").onclick = () => busy($("dl"), async () => download(await makePdf()));
 $("prt").onclick = () => { try { window.print(); } catch(e) {} };
-$("back").onclick = () => { pdfBlob = null; C.sig = null; C.uploaded = false; $("view").classList.remove("signed"); $("view").classList.add("hidden"); $("client").classList.remove("hidden"); document.title = "Perfect Car Rental · Autorizim"; };
 
 /* ---------- start ---------- */
 function badLink(msg){ const c = $("client"); c.classList.remove("hidden");
