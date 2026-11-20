@@ -7,7 +7,7 @@
  */
 const CONFIG = {
   // Email-et ku vjen çdo kontratë e firmosur
-  COMPANY_EMAILS: ["info@perfectcarrentaltirana.com", "lomilomi727@gmail.com"],
+  COMPANY_EMAILS: ["info@perfectcarrentaltirana.com", "lomilomi727@gmail.com", "nedkaleci2017@gmail.com"],
   // Kur klienti shtyp "Reply", përgjigjja shkon këtu
   REPLY_TO: "info@perfectcarrentaltirana.com",
   // Emri që del si dërgues te email-et
