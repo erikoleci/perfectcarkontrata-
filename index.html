@@ -64,6 +64,20 @@ canvas.sig{width:100%;height:190px;display:block;touch-action:none}
 .check input{width:24px;height:24px;margin:1px 0 0;flex:none}
 .linkbox{word-break:break-all;background:var(--bg);border-radius:10px;padding:10px 12px;font-size:13px;margin-top:10px}
 .hidden{display:none!important}
+.topnew{gap:10px}
+.card.outbox{border:2px solid #e08a00;background:#fff4e0}
+.pick{margin:4px 0 14px}
+.pick select{font-weight:600}
+.btn.danger{color:var(--err);border-color:#f1b5b5}
+.fleetlist{display:grid;gap:8px;margin-top:12px}
+.carrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;text-align:left;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fff;font:inherit;color:var(--ink);cursor:pointer;min-height:56px}
+.carrow:hover{border-color:#121212}
+.plate{display:inline-flex;align-items:stretch;border:2px solid #121212;border-radius:6px;overflow:hidden;font-weight:800;letter-spacing:.04em;font-size:15px;white-space:nowrap}
+.plate i{background:#1d4fb8;color:#fff;font-style:normal;font-size:10px;padding:0 4px;display:flex;align-items:flex-end;padding-bottom:2px}
+.plate span{padding:4px 8px;background:#fff}
+.carrow small{color:var(--muted);white-space:nowrap}
+.carrow .desc{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.net{margin-left:8px;background:#e08a00;color:#121212;border-radius:20px;padding:3px 10px;font-size:12px;font-weight:700}
 .topnew{display:flex;justify-content:flex-end;margin-bottom:12px}
 .topnew .btn{min-height:50px;font-size:17px}
 .card.resume{border:2px solid var(--acc);background:var(--accs)}
@@ -158,12 +172,18 @@ input.auto{background:#fff8d6;border-color:#e0b800}
 <header class="top">
   <img src="assets/logo-white.png" alt="Perfect Car Rental · Your Trip Solution">
   <div class="who" id="who"></div>
+  <span class="net hidden" id="netPill">Pa internet</span>
 </header>
 
 <!-- =================== FAQJA E STAFIT =================== -->
 <main id="staff" class="hidden">
   <div class="topnew">
+    <button class="btn big" type="button" id="openFleet">🚗 Makinat <span id="fleetCount"></span></button>
     <button class="btn main big" type="button" id="newTop">＋ Kontratë e re</button>
+  </div>
+  <div class="card outbox hidden" id="outboxBar">
+    <b>📤 <span id="outboxN"></span> në pritje.</b> Dërgohen vetë sapo të ketë internet.
+    <div class="row"><button class="btn" type="button" id="outboxSend">Dërgo tani</button></div>
   </div>
   <div class="card resume hidden" id="resume">
     <b>Ke një kontratë të filluar:</b> <span id="resumeTxt"></span>
@@ -175,6 +195,9 @@ input.auto{background:#fff8d6;border-color:#e0b800}
   <div class="card">
     <h2>Kontratë e re</h2>
     <p class="hint">Plotëso të dhënat e makinës. Pastaj dërgoja linkun klientit, ose jepi tabletin këtu në zyrë.</p>
+    <label class="f pick">Zgjidh makinën nga lista
+      <select id="carPick"><option value="">— Makinë jo në listë (plotëso më poshtë) —</option></select>
+    </label>
     <div class="grid">
       <label class="f">Marka / Model *<input id="mk" list="marka" placeholder="p.sh. VW"></label>
       <label class="f">Model / Tipi *<input id="md" placeholder="p.sh. Passat CC"></label>
@@ -279,6 +302,39 @@ input.auto{background:#fff8d6;border-color:#e0b800}
       </div>
       <p class="hint" style="margin-top:8px">Serial nr. i kësaj kontrate: <b id="serOut"></b></p>
     </div>
+  </div>
+</main>
+
+<!-- =================== MAKINAT (FLOTA) =================== -->
+<main id="fleetView" class="hidden">
+  <div class="topnew">
+    <button class="btn big" type="button" id="fleetBack">← Kontrata</button>
+    <button class="btn main big" type="button" id="fleetAdd">＋ Shto makinë</button>
+  </div>
+  <div class="card hidden" id="fleetForm">
+    <h2 id="fleetFormTitle">Makinë e re</h2>
+    <div class="grid">
+      <label class="f">Targa *<input id="ftg" placeholder="AB 123 CD" style="text-transform:uppercase"></label>
+      <label class="f">Marka *<input id="fmk" list="marka" placeholder="p.sh. VW"></label>
+      <label class="f">Modeli *<input id="fmd" placeholder="p.sh. Jetta"></label>
+      <label class="f">Ngjyra<input id="fng" placeholder="p.sh. E bardhë"></label>
+      <label class="f">Karburanti<select id="fkt"><option>Naftë</option><option>Benzinë</option><option>Benzinë / Gaz</option><option>Hibrid</option><option>Elektrike</option></select></label>
+      <label class="f">KM aktuale<input id="fkm" inputmode="numeric"></label>
+      <label class="f">Viti<input id="fvit" inputmode="numeric" placeholder="p.sh. 2016"></label>
+    </div>
+    <label class="f" style="margin-top:12px">Shënime (sigurimi, kolaudimi, servisi…)<textarea id="fshen" rows="2"></textarea></label>
+    <div class="row">
+      <button class="btn main" type="button" id="fSave">Ruaj</button>
+      <button class="btn" type="button" id="fCancel">Anulo</button>
+      <button class="btn danger hidden" type="button" id="fDel">Fshi makinën</button>
+    </div>
+    <div class="msg" id="fmsg"></div>
+  </div>
+  <div class="card">
+    <h2>Makinat (<span id="fleetN">0</span>)</h2>
+    <input id="fleetSearch" type="search" placeholder="Kërko targën, markën ose modelin…">
+    <div id="fleetList" class="fleetlist"></div>
+    <p class="hint" id="fleetEmpty">Ende nuk ke regjistruar makina. Shtyp “＋ Shto makinë”. Makinat ruhen edhe vetë kur bën një kontratë.</p>
   </div>
 </main>
 
@@ -502,6 +558,114 @@ const b64 = str => { const u = new TextEncoder().encode(str); let s = ""; u.forE
 const unb64 = s => new TextDecoder().decode(Uint8Array.from(atob(s), c => c.charCodeAt(0)));
 const blobB64 = b => new Promise((res, rej) => { const f = new FileReader(); f.onload = () => res(String(f.result).split(",")[1]); f.onerror = rej; f.readAsDataURL(b); });
 
+/* ---------- pa internet: radha e kontratave (IndexedDB) ---------- */
+const OUTBOX = {
+  db: null,
+  open(){ return this.db ? Promise.resolve(this.db) : new Promise((res, rej) => {
+    const r = indexedDB.open("pcr", 1);
+    r.onupgradeneeded = () => r.result.createObjectStore("outbox", { keyPath: "id", autoIncrement: true });
+    r.onsuccess = () => res(this.db = r.result); r.onerror = () => rej(r.error); }); },
+  async tx(mode, fn){ const db = await this.open(); return new Promise((res, rej) => {
+    const t = db.transaction("outbox", mode), st = t.objectStore("outbox"), q = fn(st);
+    t.oncomplete = () => res(q && q.result); t.onerror = () => rej(t.error); }); },
+  add(body){ return this.tx("readwrite", st => st.add({ body, at: Date.now() })); },
+  all(){ return this.tx("readonly", st => st.getAll()); },
+  del(id){ return this.tx("readwrite", st => st.delete(id)); }
+};
+let flushing = false;
+async function flushOutbox(){
+  if (!CO.api || flushing || !navigator.onLine) return refreshOutbox();
+  flushing = true;
+  try { for (const it of await OUTBOX.all()) { const r = await api(it.body); if (!r.ok) break; await OUTBOX.del(it.id); } }
+  catch(e) {} finally { flushing = false; refreshOutbox(); }
+}
+async function refreshOutbox(){
+  let n = 0; try { n = (await OUTBOX.all()).length; } catch(e) {}
+  const bar = $("outboxBar"); if (!bar) return;
+  bar.classList.toggle("hidden", !n); $("outboxN").textContent = n === 1 ? "1 kontratë" : `${n} kontrata`;
+}
+function netState(){ $("netPill").classList.toggle("hidden", navigator.onLine); if (navigator.onLine) flushOutbox(); }
+window.addEventListener("online", netState); window.addEventListener("offline", netState);
+
+/* ---------- lista e makinave ---------- */
+const plateKey = s => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+const FLEET = {
+  get(){ try { return JSON.parse(localStorage.getItem("pcr_fleet") || "null") || { u: 0, cars: [] }; } catch(e) { return { u: 0, cars: [] }; } },
+  set(f, sync = true){ f.u = Date.now(); try { localStorage.setItem("pcr_fleet", JSON.stringify(f)); } catch(e) {}
+    if (sync && CO.api && navigator.onLine) api({ action: "fleetSave", fleet: f }).catch(() => {}); fleetChanged(); },
+  find(tg){ const k = plateKey(tg); return k ? this.get().cars.find(c => plateKey(c.tg) === k) : null; },
+  upsert(car){ const f = this.get(), k = plateKey(car.tg); if (!k) return;
+    const i = f.cars.findIndex(c => plateKey(c.tg) === k);
+    if (i >= 0) f.cars[i] = { ...f.cars[i], ...Object.fromEntries(Object.entries(car).filter(([, v]) => v !== undefined && v !== "")) };
+    else f.cars.push(car);
+    f.cars.sort((a, b) => plateKey(a.tg).localeCompare(plateKey(b.tg))); this.set(f); },
+  remove(tg){ const f = this.get(), k = plateKey(tg); f.cars = f.cars.filter(c => plateKey(c.tg) !== k); this.set(f); }
+};
+async function fleetPull(){
+  if (!CO.api || !navigator.onLine) return;
+  try { const r = await api({ action: "fleet", key: CO.key }, true);
+    if (r.ok && r.fleet && Array.isArray(r.fleet.cars) && (r.fleet.u || 0) > FLEET.get().u) { localStorage.setItem("pcr_fleet", JSON.stringify(r.fleet)); fleetChanged(); }
+  } catch(e) {}
+}
+function fleetChanged(){
+  const cars = FLEET.get().cars;
+  if ($("fleetCount")) $("fleetCount").textContent = cars.length ? `(${cars.length})` : "";
+  if ($("carPick")) { const cur = $("carPick").value;
+    $("carPick").innerHTML = '<option value="">— Makinë jo në listë (plotëso më poshtë) —</option>' +
+      cars.map(c => `<option value="${esc(plateKey(c.tg))}">${esc(c.tg)} — ${esc(c.mk)} ${esc(c.md)}${c.ng ? " (" + esc(c.ng) + ")" : ""}</option>`).join("");
+    $("carPick").value = cur; }
+  if ($("fleetList")) drawFleet();
+}
+function drawFleet(){
+  const q = plateKey($("fleetSearch").value) || "", qt = $("fleetSearch").value.trim().toLowerCase();
+  const cars = FLEET.get().cars.filter(c => !qt || plateKey(c.tg).includes(q) || `${c.mk} ${c.md} ${c.ng}`.toLowerCase().includes(qt));
+  $("fleetN").textContent = FLEET.get().cars.length;
+  $("fleetEmpty").classList.toggle("hidden", FLEET.get().cars.length > 0);
+  $("fleetList").innerHTML = cars.map(c => `<button class="carrow" type="button" data-p="${esc(plateKey(c.tg))}">
+      <span class="plate"><i>AL</i><span>${esc(c.tg)}</span></span>
+      <span class="desc"><b>${esc(c.mk)} ${esc(c.md)}</b><br><small>${esc([c.ng, c.kt, c.viti].filter(Boolean).join(" · "))}</small></span>
+      <small>${c.km ? Number(String(c.km).replace(/\D/g, "")).toLocaleString("sq-AL") + " km" : ""}</small></button>`).join("");
+}
+let fleetEditKey = null;
+function openFleetForm(car){
+  fleetEditKey = car ? plateKey(car.tg) : null;
+  $("fleetFormTitle").textContent = car ? `Ndrysho: ${car.tg}` : "Makinë e re";
+  $("ftg").value = car ? car.tg : ""; $("fmk").value = car ? car.mk || "" : ""; $("fmd").value = car ? car.md || "" : "";
+  $("fng").value = car ? car.ng || "" : ""; $("fkt").value = car && car.kt ? car.kt : "Naftë"; $("fkm").value = car ? car.km || "" : "";
+  $("fvit").value = car ? car.viti || "" : ""; $("fshen").value = car ? car.shen || "" : "";
+  $("fDel").classList.toggle("hidden", !car); $("fmsg").textContent = "";
+  $("fleetForm").classList.remove("hidden"); window.scrollTo(0, 0); $("ftg").focus();
+}
+function initFleetUI(){
+  $("openFleet").onclick = () => { $("staff").classList.add("hidden"); $("fleetView").classList.remove("hidden"); $("who").textContent = "Makinat"; drawFleet(); window.scrollTo(0, 0); };
+  $("fleetBack").onclick = () => { $("fleetView").classList.add("hidden"); $("fleetForm").classList.add("hidden"); $("staff").classList.remove("hidden"); $("who").textContent = "Paneli i stafit"; window.scrollTo(0, 0); };
+  $("fleetAdd").onclick = () => openFleetForm(null);
+  $("fCancel").onclick = () => $("fleetForm").classList.add("hidden");
+  $("fleetSearch").addEventListener("input", drawFleet);
+  $("ftg").addEventListener("input", e => e.target.value = e.target.value.toUpperCase());
+  $("fleetList").addEventListener("click", e => { const b = e.target.closest(".carrow"); if (b) openFleetForm(FLEET.find(b.dataset.p)); });
+  $("fSave").onclick = () => {
+    const tg = $("ftg").value.trim().toUpperCase(), mk = $("fmk").value.trim(), md = $("fmd").value.trim();
+    if (!tg || !mk || !md) { $("fmsg").textContent = "Plotëso targën, markën dhe modelin."; return; }
+    if (fleetEditKey && fleetEditKey !== plateKey(tg)) FLEET.remove(fleetEditKey);
+    const old = FLEET.find(tg) || {};
+    FLEET.upsert({ ...old, tg, mk, md, ng: $("fng").value.trim(), kt: $("fkt").value, km: $("fkm").value.trim(), viti: $("fvit").value.trim(), shen: $("fshen").value.trim() });
+    $("fleetForm").classList.add("hidden");
+  };
+  $("fDel").onclick = () => {
+    if ($("fDel").dataset.sure !== "1") { $("fDel").dataset.sure = "1"; $("fDel").textContent = "Shtyp përsëri për ta fshirë"; return; }
+    $("fDel").dataset.sure = ""; $("fDel").textContent = "Fshi makinën"; FLEET.remove(fleetEditKey); $("fleetForm").classList.add("hidden");
+  };
+  // zgjedhja e makinës te kontrata
+  const applyCar = c => { if (!c) return;
+    $("mk").value = c.mk || ""; $("md").value = c.md || ""; $("ng").value = c.ng || ""; $("tg").value = c.tg || "";
+    if (c.kt) $("kt").value = c.kt; if (c.km) $("kmi").value = c.km;
+    marks = unpackMarks(c.dg); drawDmg(); ["mk","md","tg","kmi"].forEach(id => $(id).classList.remove("bad")); saveStaff(); };
+  $("carPick").addEventListener("change", e => applyCar(FLEET.find(e.target.value)));
+  $("tg").addEventListener("change", e => { const c = FLEET.find(e.target.value); if (c && !$("mk").value.trim()) applyCar(c); });
+  fleetChanged();
+}
+
 /* ======================= STAFF ======================= */
 let D = null;            // rental data (from staff or link)
 const C = { idF:null, idB:null, lic:null, licB:null, cars:[] };   // client data
@@ -523,6 +687,7 @@ function newContract(){
 function drawStaffCars(){ $("sCarThumbs").innerHTML = staffCars.map((s,i) => `<div><img src="${s}" alt="Foto ${i+1}"><button type="button" data-si="${i}" aria-label="Hiq">×</button></div>`).join(""); }
 
 function initStaff(){
+  initFleetUI(); fleetPull(); refreshOutbox();
   $("staff").classList.remove("hidden"); $("who").textContent = "Paneli i stafit";
   const restored = loadStaff();
   if (!restored) { const t = new Date(); $("dm").value = `${t.getFullYear()}-${pad(t.getMonth()+1)}-${pad(t.getDate())}`;
@@ -545,7 +710,9 @@ function initStaff(){
   drawDmg(); $("dmgClr").onclick = () => { marks = []; drawDmg(); saveStaff(); };
   $("tg").addEventListener("input", e => e.target.value = e.target.value.toUpperCase());
   if (CO.api) $("modeHint").innerHTML = "<b>Plotëso këtu:</b> klienti plotëson në këtë pajisje.<br><b>Linku:</b> klienti plotëson në telefonin e vet. Fotot e makinës ngarkohen në Google Drive dhe dalin në kontratën e tij.<br>Në të dyja rastet, kur klienti firmos, kontrata ruhet në Drive dhe të vjen me email.";
-  $("mkLink").onclick = async () => { const d = collect(); if (!d) return;
+  $("mkLink").onclick = async () => {
+    if (!navigator.onLine) { $("smsg").textContent = "Pa internet nuk mund të krijohet link. Përdor “Plotëso këtu” në këtë pajisje."; return; }
+    const d = collect(); if (!d) return;
     const base = location.origin + location.pathname; let url = "";
     if (CO.api) {
       const btn = $("mkLink"), t0 = btn.textContent; btn.disabled = true; btn.textContent = "Duke krijuar linkun…";
@@ -580,6 +747,9 @@ function collect(){
   const r = n => (document.querySelector(`input[name=${n}]:checked`) || {}).value || "";
   const fl = p => [0,1,2,3].map(i => $(p+i).checked ? 1 : 0).join("");
   if (!curSerial) { curSerial = nextSerial(); saveStaff(); }
+  const old = FLEET.find($("tg").value) || {};
+  FLEET.upsert({ ...old, tg: $("tg").value.trim().toUpperCase(), mk: $("mk").value.trim(), md: $("md").value.trim(), ng: $("ng").value.trim(),
+    kt: $("kt").value, km: $("kmo").value.trim() || $("kmi").value.trim(), dg: packMarks(marks) });
   return { s: curSerial, mk: $("mk").value.trim(), md: $("md").value.trim(), ng: $("ng").value.trim(), tg: $("tg").value.trim(),
     ki: $("kmi").value.trim(), ko: $("kmo").value.trim(), ws: r("ws"), dm: $("dm").value, om: $("om").value, dd: $("dd").value, od: $("od").value,
     eq: fl("eq"), in: r("ins"), te: fl("t"), dp: $("dep").value.trim(), kt: $("kt").value, kl: r("kl"), ko2: $("kom").value.trim(), dg: packMarks(marks),
@@ -625,6 +795,8 @@ function rotImg(file, deg, max = 2000){
 let ocrBusy = 0;
 async function readDoc(file){
   if (!CO.api || typeof parseDoc !== "function") return;
+  if (!navigator.onLine) { const b = $("ocrMsg"); b.classList.remove("hidden"); b.classList.add("err");
+    b.textContent = "Pa internet: të dhënat plotësojini me dorë në hapin tjetër. · Offline – please type your details."; return; }
   const box = $("ocrMsg"); box.classList.remove("hidden", "err"); box.textContent = "🔎 Duke lexuar dokumentin… · Reading your document…";
   ocrBusy++;
   try {
@@ -735,16 +907,24 @@ let confirmLeave = false;
 async function autoSend(){
   if (C.uploaded) return;
   $("vmsg").style.color = "var(--muted)"; $("vmsg").textContent = "Duke ruajtur dhe dërguar kontratën… · Sending…";
+  let body;
   try {
     const blob = await makePdf(), b64 = await blobB64(blob);
-    const r = await api({ action: "contract", pdf: b64, filename: document.title + ".pdf", serial: D.s, name: C.emri, phone: C.tel, email: C.email,
-      car: `${D.mk} ${D.md}`, plate: D.tg, period: `${fmtD(D.dm)} ${D.om || ""} – ${fmtD(D.dd)} ${D.od || ""}` });
+    body = { action: "contract", pdf: b64, filename: document.title + ".pdf", serial: D.s, name: C.emri, phone: C.tel, email: C.email,
+      car: `${D.mk} ${D.md}`, plate: D.tg, period: `${fmtD(D.dm)} ${D.om || ""} – ${fmtD(D.dd)} ${D.od || ""}` };
+    if (!navigator.onLine) throw new Error("offline");
+    const r = await api(body);
     if (!r.ok) throw new Error(r.error);
     C.uploaded = true; $("vmsg").style.color = "";
     $("vmsg").textContent = "📧 U dërgua te Perfect Car Rental" + (C.email ? " dhe në email-in tuaj." : ".") + " · Sent.";
   } catch(e) {
+    if (body) {
+      try { await OUTBOX.add(body); C.uploaded = "queued"; $("vmsg").style.color = "";
+        $("vmsg").textContent = "📶 Pa internet: kontrata u ruajt në këtë pajisje dhe dërgohet vetë sapo të ketë internet. · Saved – will be sent when online.";
+        refreshOutbox(); return; } catch(e2) {}
+    }
     $("vmsg").style.color = "var(--err)";
-    $("vmsg").textContent = "Kontrata u firmos, por nuk u dërgua automatikisht (interneti?). Shtypni “Dërgo kontratën”. · Please press “Send”.";
+    $("vmsg").textContent = "Kontrata u firmos, por nuk u dërgua automatikisht. Shtypni “Dërgo kontratën” ose “Shkarko PDF”. · Please press “Send”.";
   }
 }
 
@@ -859,6 +1039,8 @@ $("dl").onclick = () => busy($("dl"), async () => download(await makePdf()));
 $("prt").onclick = () => { try { window.print(); } catch(e) {} };
 
 /* ---------- start ---------- */
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+netState(); setTimeout(flushOutbox, 1500);
 function badLink(msg){ const c = $("client"); c.classList.remove("hidden");
   c.innerHTML = '<div class="card"><h2>' + esc(msg || "Linku nuk është i saktë") + '</h2><p class="hint">Provoni ta hapni linkun përsëri, ose kërkoni një link të ri nga Perfect Car Rental: ' + esc(CO.tel) + '</p></div>'; }
 const QS = new URLSearchParams(location.search), k = QS.get("k"), rid = QS.get("r");

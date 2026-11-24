@@ -51,6 +51,18 @@ Del ikona **Perfect Car** si aplikacion.
 - **Faqja 2:** ID përpara dhe mbrapa, patenta, dhe poshtë tyre fotot e makinës.
 - Ruaji në një dosje, p.sh. në Google Drive, dosja *Kontratat 2026*.
 
+## 3b. Makinat (flota)
+- Shtyp **🚗 Makinat**, pastaj **＋ Shto makinë**: targa, marka, modeli, ngjyra, karburanti, KM, viti dhe shënime.
+- Te kontrata, te **"Zgjidh makinën nga lista"**, zgjedh targën dhe plotësohen vetë marka, modeli, ngjyra, karburanti, KM-të dhe dëmtimet e shënuara herën e fundit.
+- Çdo kontratë e përditëson vetë makinën në listë (KM dhe dëmtimet). Edhe makina që nuk është në listë shtohet vetë.
+- Lista ruhet në Google Drive (`flota.json`) dhe është e njëjtë në çdo telefon.
+
+## 3c. Pa internet
+- Aplikacioni ruhet në telefon pas hapjes së parë dhe **hapet edhe pa internet** (lart del "Pa internet").
+- Pa internet punon **"Plotëso këtu"** (në tablet): klienti fotografon, plotëson dhe firmos, dhe PDF-ja krijohet në telefon.
+- Kontrata **ruhet në telefon** dhe **dërgohet vetë** (email + Drive) sapo të kthehet interneti. Te paneli del "📤 N kontrata në pritje" me butonin **Dërgo tani**.
+- Pa internet **nuk** punojnë: linku për klientin dhe leximi automatik i patentës (klienti i shkruan të dhënat me dorë).
+
 ## 4. Ndryshimet
 
 Të dhënat e kompanisë janë në `index.html`, te blloku `CO`:
@@ -119,6 +131,7 @@ Google Drive
 |---|---|
 | `index.html` | i gjithë aplikacioni |
 | `manifest.json` | që të instalohet si aplikacion |
+| `sw.js` | që aplikacioni të hapet edhe pa internet |
 | `assets/logo-*.png` | logoja |
 | `assets/icon-*.png` | ikona e aplikacionit |
 | `assets/html2pdf.bundle.min.js` | libraria që krijon PDF-në |

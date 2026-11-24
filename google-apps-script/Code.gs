@@ -34,6 +34,10 @@ function root_() {
   const it = DriveApp.getFoldersByName(CONFIG.ROOT_FOLDER);
   return it.hasNext() ? it.next() : DriveApp.createFolder(CONFIG.ROOT_FOLDER);
 }
+function fleetFile_() {
+  const it = root_().getFilesByName("flota.json");
+  return it.hasNext() ? it.next() : root_().createFile("flota.json", '{"u":0,"cars":[]}', "application/json");
+}
 function photosFolder_() { return folder_(root_(), "_Fotot e makinave (stafi)"); }
 function blobFromDataUrl_(dataUrl, name) {
   const m = String(dataUrl).match(/^data:([^;]+);base64,(.+)$/);
@@ -72,6 +76,10 @@ function ocrRest_(blob) {
 function doGet(e) {
   try {
     const p = (e && e.parameter) || {};
+    if (p.action === "fleet") {
+      if (p.key !== CONFIG.KEY) return json_({ ok: false, error: "key" });
+      return json_({ ok: true, fleet: JSON.parse(fleetFile_().getBlob().getDataAsString() || "{}") });
+    }
     if (p.action === "photos") {
       const token = cleanToken_(p.t);
       if (!token) return json_({ ok: false, error: "token" });
@@ -100,6 +108,12 @@ function doPost(e) {
       if (!token || !Array.isArray(body.photos)) return json_({ ok: false, error: "data" });
       const f = folder_(photosFolder_(), token);
       body.photos.slice(0, 12).forEach((d, i) => f.createFile(blobFromDataUrl_(d, "foto-" + String(i + 1).padStart(2, "0") + ".jpg")));
+      return json_({ ok: true });
+    }
+
+    if (body.action === "fleetSave") {
+      if (!body.fleet || !Array.isArray(body.fleet.cars)) return json_({ ok: false, error: "data" });
+      fleetFile_().setContent(JSON.stringify(body.fleet));
       return json_({ ok: true });
     }
 
@@ -159,7 +173,7 @@ function doPost(e) {
 
 /* Ekzekutoje një herë nga editori (▶ Run) që Google të kërkojë lejet. */
 function provo() {
-  root_();
+  root_(); fleetFile_();
   // provë e leximit me një imazh të vogël me tekst
   const png = Utilities.newBlob(Utilities.base64Decode(PROVA_PNG_), "image/png", "prova.png");
   try { Logger.log("Leximi i patentës: OK (" + (typeof Drive !== "undefined" ? "Drive API" : "pa Services") + ") · lexoi: " + ocr_(png).trim().slice(0, 40)); }
