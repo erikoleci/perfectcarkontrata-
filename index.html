@@ -64,6 +64,10 @@ canvas.sig{width:100%;height:190px;display:block;touch-action:none}
 .check input{width:24px;height:24px;margin:1px 0 0;flex:none}
 .linkbox{word-break:break-all;background:var(--bg);border-radius:10px;padding:10px 12px;font-size:13px;margin-top:10px}
 .hidden{display:none!important}
+.topnew{display:flex;justify-content:flex-end;margin-bottom:12px}
+.topnew .btn{min-height:50px;font-size:17px}
+.card.resume{border:2px solid var(--acc);background:var(--accs)}
+@media(max-width:600px){.topnew .btn{width:100%}}
 .stepper{position:sticky;top:0;z-index:6;background:#0d0d0d;padding:10px max(4vw,16px) 12px}
 .stepper .bar{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-width:790px;margin:0 auto}
 .stepper .bar i{height:6px;border-radius:3px;background:#3a3a3a;transition:background .3s}
@@ -158,6 +162,16 @@ input.auto{background:#fff8d6;border-color:#e0b800}
 
 <!-- =================== FAQJA E STAFIT =================== -->
 <main id="staff" class="hidden">
+  <div class="topnew">
+    <button class="btn main big" type="button" id="newTop">＋ Kontratë e re</button>
+  </div>
+  <div class="card resume hidden" id="resume">
+    <b>Ke një kontratë të filluar:</b> <span id="resumeTxt"></span>
+    <div class="row">
+      <button class="btn" type="button" id="resumeGo">Vazhdo këtë</button>
+      <button class="btn main" type="button" id="resumeNew">Fillo kontratë të re</button>
+    </div>
+  </div>
   <div class="card">
     <h2>Kontratë e re</h2>
     <p class="hint">Plotëso të dhënat e makinës. Pastaj dërgoja linkun klientit, ose jepi tabletin këtu në zyrë.</p>
@@ -255,7 +269,7 @@ input.auto{background:#fff8d6;border-color:#e0b800}
       <button class="btn main" type="button" id="here">Plotëso këtu (në tablet)</button>
     </div>
     <p class="hint" id="modeHint" style="margin:10px 0 0"><b>Plotëso këtu:</b> klienti plotëson në këtë pajisje dhe fotot e makinës që bëre hyjnë në kontratë.<br><b>Linku:</b> klienti plotëson në telefonin e vet. Fotot e makinës nuk kalojnë dot me link, prandaj kontrata e klientit vjen pa to. Fotot i ke ti në telefon. Për kontratë të plotë me foto përdor “Plotëso këtu”.</p>
-    <div class="row"><button class="btn" type="button" id="clearStaff">Pastro formularin (kontratë e re)</button></div>
+    <div class="row"><button class="btn" type="button" id="clearStaff">＋ Kontratë e re (pastro formularin)</button></div>
     <div class="msg" id="smsg"></div>
     <div id="linkOut" class="hidden">
       <div class="linkbox" id="linkTxt"></div>
@@ -329,6 +343,7 @@ input.auto{background:#fff8d6;border-color:#e0b800}
     <button class="btn wa" type="button" id="send">Dërgo kontratën · Send</button>
     <button class="btn" type="button" id="dl">Shkarko PDF</button>
     <button class="btn" type="button" id="prt">Printo</button>
+    <button class="btn hidden" type="button" id="newDone">＋ Kontratë e re</button>
   </div>
 
   <div class="card done hidden" id="doneCard">
@@ -500,6 +515,11 @@ function loadStaff(){ let o; try { o = JSON.parse(localStorage.getItem("pcr_staf
   STAFF_FIELDS.forEach(id => { const el = $(id); if (!(id in o.f)) return; if (el.type === "checkbox") el.checked = o.f[id]; else el.value = o.f[id]; });
   Object.entries(o.r || {}).forEach(([n,v]) => { const el = document.querySelector(`input[name=${n}][value="${v}"]`); if (el) el.checked = true; });
   marks = o.marks || []; staffCars = o.cars || []; curSerial = o.s || null; return true; }
+function newContract(){
+  try { localStorage.removeItem("pcr_staff"); } catch(e) {}
+  try { Object.keys(sessionStorage).filter(k => k.startsWith("pcr_c_")).forEach(k => sessionStorage.removeItem(k)); } catch(e) {}
+  location.href = location.pathname;
+}
 function drawStaffCars(){ $("sCarThumbs").innerHTML = staffCars.map((s,i) => `<div><img src="${s}" alt="Foto ${i+1}"><button type="button" data-si="${i}" aria-label="Hiq">×</button></div>`).join(""); }
 
 function initStaff(){
@@ -511,7 +531,13 @@ function initStaff(){
   $("staff").addEventListener("input", saveStaff); $("staff").addEventListener("change", saveStaff);
   $("sCarIn").addEventListener("change", async e => { for (const f of e.target.files) { if (staffCars.length >= 10) break; staffCars.push(await loadImg(f, 1100, .75)); } e.target.value = ""; drawStaffCars(); saveStaff(); });
   $("sCarThumbs").addEventListener("click", e => { const i = e.target.dataset.si; if (i !== undefined) { staffCars.splice(+i, 1); drawStaffCars(); saveStaff(); } });
-  $("clearStaff").onclick = () => { try { localStorage.removeItem("pcr_staff"); } catch(e) {} location.href = location.pathname; };
+  $("clearStaff").onclick = newContract; $("newTop").onclick = newContract; $("resumeNew").onclick = newContract;
+  $("resumeGo").onclick = () => $("resume").classList.add("hidden");
+  if (restored && ($("mk").value || $("tg").value)) {
+    $("resumeTxt").textContent = `${$("mk").value} ${$("md").value} · ${$("tg").value}` + (curSerial ? ` · nr. ${curSerial}` : "");
+    $("resume").classList.remove("hidden");
+  }
+  try { history.scrollRestoration = "manual"; } catch(e) {} window.scrollTo(0, 0);
   padC = makePad($("sigC"), () => { const s = padC.small(); if (s) { LS.set("pcr_sig", s); $("sigCsaved").textContent = "Firma u ruajt ✓"; } });
   const saved = LS.get("pcr_sig"); if (saved) { padC.load(saved); $("sigCsaved").textContent = "Firma e ruajtur ✓"; }
   $("clrC").onclick = () => { padC.clear(); LS.set("pcr_sig", ""); $("sigCsaved").textContent = ""; };
@@ -537,7 +563,7 @@ function initStaff(){
     $("sendWa").href = "https://wa.me/?text=" + encodeURIComponent(txt);
     $("copy").onclick = async () => { try { await navigator.clipboard.writeText(url); $("copy").textContent = "U kopjua ✓"; } catch(e) { $("copy").textContent = "Kopjoje me dorë"; } };
   };
-  $("here").onclick = () => { if (!staffCars.length) { $("smsg").textContent = "Bëj të paktën një foto të makinës para se t'ia japësh klientit."; return; }
+  $("here").onclick = () => { C.tablet = true; if (!staffCars.length) { $("smsg").textContent = "Bëj të paktën një foto të makinës para se t'ia japësh klientit."; return; }
     const d = collect(); if (!d) return; D = d; C.cars = staffCars.slice(); C.fromStaff = staffCars.length > 0;
     $("staff").classList.add("hidden"); initClient(); window.scrollTo(0,0); };
 }
@@ -696,8 +722,16 @@ $("signBtn").onclick = () => {
   $("doc").innerHTML = renderDoc(D, C); setTitle();
   $("vmsg").style.color = ""; $("vmsg").textContent = CO.api ? "" : "Shtypni “Dërgo kontratën” për ta dërguar. · Press “Send” to share it.";
   setStep(5);
+  try { sessionStorage.removeItem(CKEY()); } catch(e) {}
+  if (C.tablet) { try { localStorage.removeItem("pcr_staff"); } catch(e) {} $("newDone").classList.remove("hidden"); }
   if (CO.api) autoSend();
 };
+$("newDone").onclick = () => {
+  if (CO.api && !C.uploaded && !confirmLeave) { confirmLeave = true; $("vmsg").style.color = "var(--err)";
+    $("vmsg").textContent = "Kontrata ende nuk është dërguar. Shtypni përsëri “Kontratë e re” nëse jeni i sigurt."; return; }
+  newContract();
+};
+let confirmLeave = false;
 async function autoSend(){
   if (C.uploaded) return;
   $("vmsg").style.color = "var(--muted)"; $("vmsg").textContent = "Duke ruajtur dhe dërguar kontratën… · Sending…";

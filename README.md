@@ -33,7 +33,8 @@ Del ikona **Perfect Car** si aplikacion.
 5. **Firma e kompanisë** bëhet vetëm herën e parë. Ruhet në telefon.
 6. Shtyp **"Plotëso këtu"** dhe jepi telefonin ose tabletin klientit. *(Kjo është mënyra kryesore.)*
    - Ka edhe mundësinë **"Krijo linkun"** për klientin, por kështu kontrata vjen **pa fotot e makinës**, sepse fotot nuk kalojnë dot me link pa server.
-7. Pas çdo kontrate shtyp **"Pastro formularin"** për të filluar kontratën tjetër.
+7. Për kontratën tjetër shtyp **"＋ Kontratë e re"** lart. Kur hap aplikacionin dhe ka të dhëna të mbetura, del shiriti *"Ke një kontratë të filluar"* me **Vazhdo këtë / Fillo kontratë të re**.
+   - Në tablet ("Plotëso këtu") formulari pastrohet vetë pasi klienti firmos, dhe në fund del butoni **"＋ Kontratë e re"**.
 
 > Nëse faqja rifreskohet (p.sh. pas kamerës), të dhënat nuk humbin, sepse ruhen automatikisht.
 
