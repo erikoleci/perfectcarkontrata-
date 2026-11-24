@@ -568,13 +568,19 @@ const OUTBOX = {
   async tx(mode, fn){ const db = await this.open(); return new Promise((res, rej) => {
     const t = db.transaction("outbox", mode), st = t.objectStore("outbox"), q = fn(st);
     t.oncomplete = () => res(q && q.result); t.onerror = () => rej(t.error); }); },
-  add(body){ return this.tx("readwrite", st => st.add({ body, at: Date.now() })); },
+  add(body){ return this.tx("readwrite", st => st.add({ body: { key: CO.key, ...body }, url: CO.api, at: Date.now() }))
+    .then(id => { try { navigator.serviceWorker.ready.then(r => r.sync && r.sync.register("pcr-outbox")).catch(() => {}); } catch(e) {} return id; }); },
   all(){ return this.tx("readonly", st => st.getAll()); },
   del(id){ return this.tx("readwrite", st => st.delete(id)); }
 };
 let flushing = false;
-async function flushOutbox(){
+async function flushOutbox(force){
   if (!CO.api || flushing || !navigator.onLine) return refreshOutbox();
+  // Android: e dërgon service worker-i (edhe me aplikacionin të mbyllur); këtu vetëm nëse ka mbetur pas 30 sekondash
+  if (!force && "SyncManager" in window && navigator.serviceWorker && navigator.serviceWorker.controller) {
+    try { (await navigator.serviceWorker.ready).sync.register("pcr-outbox"); } catch(e) {}
+    setTimeout(() => flushOutbox(true), 30000); return refreshOutbox();
+  }
   flushing = true;
   try { for (const it of await OUTBOX.all()) { const r = await api(it.body); if (!r.ok) break; await OUTBOX.del(it.id); } }
   catch(e) {} finally { flushing = false; refreshOutbox(); }
@@ -688,6 +694,9 @@ function drawStaffCars(){ $("sCarThumbs").innerHTML = staffCars.map((s,i) => `<d
 
 function initStaff(){
   initFleetUI(); fleetPull(); refreshOutbox();
+  $("outboxSend").onclick = () => flushOutbox(true);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) refreshOutbox(); });
+  setInterval(refreshOutbox, 15000);
   $("staff").classList.remove("hidden"); $("who").textContent = "Paneli i stafit";
   const restored = loadStaff();
   if (!restored) { const t = new Date(); $("dm").value = `${t.getFullYear()}-${pad(t.getMonth()+1)}-${pad(t.getDate())}`;
@@ -793,28 +802,46 @@ function rotImg(file, deg, max = 2000){
     im.onerror = rej; im.src = url; });
 }
 let ocrBusy = 0;
+/* OCR në vetë telefonin (pa internet) */
+let tWorker = null;
+const loadScript = src => new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = src; sc.onload = res; sc.onerror = rej; document.head.appendChild(sc); });
+async function localOcr(img){
+  if (!window.Tesseract) await loadScript("assets/ocr/tesseract.min.js");
+  if (!tWorker) {
+    const abs = p => new URL(p, location.href).href;
+    tWorker = await Tesseract.createWorker("eng", 1, { workerPath: abs("assets/ocr/worker.min.js"), corePath: abs("assets/ocr/core"),
+      langPath: abs("assets/ocr/lang"), gzip: false });
+  }
+  const r = await tWorker.recognize(img); return r.data.text;
+}
+window.PCR = { localOcr: i => localOcr(i), rotImg: (f, d, m) => rotImg(f, d, m) }; // për diagnostikim
 async function readDoc(file){
-  if (!CO.api || typeof parseDoc !== "function") return;
-  if (!navigator.onLine) { const b = $("ocrMsg"); b.classList.remove("hidden"); b.classList.add("err");
-    b.textContent = "Pa internet: të dhënat plotësojini me dorë në hapin tjetër. · Offline – please type your details."; return; }
-  const box = $("ocrMsg"); box.classList.remove("hidden", "err"); box.textContent = "🔎 Duke lexuar dokumentin… · Reading your document…";
+  if (typeof parseDoc !== "function") return;
+  const online = !!CO.api && navigator.onLine;
+  const box = $("ocrMsg"); box.classList.remove("hidden", "err");
+  box.textContent = online ? "🔎 Duke lexuar dokumentin… · Reading your document…"
+                           : "🔎 Duke lexuar dokumentin në telefon (pa internet, 10–20 sekonda)… · Reading on device…";
   ocrBusy++;
   try {
-    const first = await rotImg(file, 0);
+    const first = await rotImg(file, 0, 2000);
     const tries = first.portrait ? [90, 270, 0] : [0, 180];
-    let best = {}, bestN = -1;
+    const results = []; let useLocal = !online;
     for (const deg of tries) {
-      const img = deg === 0 ? first.data : (await rotImg(file, deg)).data;
-      const r = await api({ action: "ocr", image: img }); if (!r.ok) throw new Error(r.error);
-      const p = parseDoc(r.text), n = ["mbiemri","emri","dob","nrId","nrPatente"].filter(k => p[k]).length;
-      if (n > bestN) { best = p; bestN = n; }
-      if (n >= 3) break;
+      const img = deg === 0 ? first.data : (await rotImg(file, deg, 2000)).data;
+      let text = null;
+      if (!useLocal) { try { const r = await api({ action: "ocr", image: img }); if (r.ok) text = r.text; } catch(e) {} if (text == null) useLocal = true; }
+      if (text == null) text = await localOcr(img);
+      const p = parseDoc(text), n = ["mbiemri","emri","dob","nrId","nrPatente"].filter(k => p[k]).length;
+      results.push({ p, n });
+      if (n >= 5 || (!useLocal && n >= 4)) break;
     }
+    // bashko leximet: leximi më i mirë ka përparësi, të tjerët plotësojnë fushat që mungojnë
+    const best = results.sort((a, b) => a.n - b.n).reduce((acc, r) => ({ ...acc, ...Object.fromEntries(Object.entries(r.p).filter(([, v]) => v)) }), {});
     const got = fillFromDoc(best);
     if (got.length) box.textContent = "✓ U lexuan: " + got.join(", ") + ". Shtypni Vazhdo për t'i kontrolluar. · Read successfully – press Continue.";
     else { box.classList.add("err"); box.textContent = "Dokumenti nuk u lexua dot. Bëni një foto më të qartë ose plotësojini me dorë. · Couldn't read it – retake the photo or type your details."; }
   } catch(e) {
-    box.classList.add("err"); box.textContent = "Leximi automatik nuk punoi (interneti?). Plotësojini të dhënat me dorë. · Please type your details.";
+    box.classList.add("err"); box.textContent = "Leximi automatik nuk punoi. Plotësojini të dhënat me dorë në hapin tjetër. · Please type your details.";
   } finally { ocrBusy--; saveClient(); }
 }
 function fillFromDoc(p){

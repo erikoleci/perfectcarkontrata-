@@ -45,22 +45,35 @@
   }
 
   /* ---------- fushat e numëruara (patenta BE / SHBA) ---------- */
-  function numbered(text) {
-    const f = {};
-    const lab = /(?:^|\s)(4[A-D]|[1-9])[.,]?\s+(?=\S)/g;
-    text.split("\n").forEach(line => {
+  // emrat në dokumente janë me shkronja të mëdha: merr fjalët me shkronja të mëdha dhe ndalo te "zhurma"
+  function nameFrom(orig) {
+    const out = [];
+    for (const w of String(orig || "").replace(/^(LN|FN|SURNAME|NAME|MBIEMRI|EMRI)\s+/, "").split(/\s+/)) {
+      const t = w.replace(/[.,:;]+$/, "");
+      if (/^[A-ZÇËÄÖÜÉÈÁÀÍÓÚÑŠŽĆČĐ'-]{2,}$/.test(t)) out.push(t); else break;
+      if (out.length === 3) break;
+    }
+    return out.join(" ");
+  }
+  function numbered(orig) {
+    const f = {}, fo = {};
+    // etiketat me pikë ("1.", "4d.") janë më të sigurta; pa pikë vetëm nëse s'ka asnjë me pikë (p.sh. SHBA "1 SMITH")
+    const dotted = (orig.match(/(?:^|\s)(?:4[a-dA-D]|[1-9])\.\s+\S/g) || []).length >= 2;
+    const lab = dotted ? /(?:^|\s)(4[a-dA-D]|[1-9])[.,]\s+(?=\S)/g : /(?:^|\s)(4[a-dA-D]|[1-9])[.,]?\s+(?=\S)/g;
+    orig.split("\n").forEach(line => {
       const marks = []; let m;
       lab.lastIndex = 0;
-      while ((m = lab.exec(line))) marks.push({ k: m[1], start: m.index, end: lab.lastIndex });
+      while ((m = lab.exec(line))) marks.push({ k: m[1].toUpperCase(), start: m.index, end: lab.lastIndex });
       marks.forEach((mk, i) => {
         const v = line.slice(mk.end, i + 1 < marks.length ? marks[i + 1].start : line.length).trim();
-        if (v && !(mk.k in f)) f[mk.k] = v;
-        else if (v) (f["_" + mk.k] = f["_" + mk.k] || []).push(v);
+        if (!v) return;
+        if (!(mk.k in f)) { f[mk.k] = v.toUpperCase(); fo[mk.k] = v; }
+        else (f["_" + mk.k] = f["_" + mk.k] || []).push(v.toUpperCase());
       });
     });
     const out = {};
-    if (f["1"]) out.mbiemri = cleanName(f["1"].replace(/^(LN|SURNAME|MBIEMRI)\s+/, ""));
-    if (f["2"]) out.emri = cleanName(f["2"].replace(/^(FN|NAME|EMRI)\s+/, ""));
+    if (fo["1"]) out.mbiemri = nameFrom(fo["1"]);
+    if (fo["2"]) out.emri = nameFrom(fo["2"]);
     // 3 = datëlindja (mund të vijë edhe si "3 DOB 01/02/1990")
     const dobSrc = [f["3"], ...(f["_3"] || [])].find(v => v && DATE.test(v));
     if (dobSrc) { const d = dobSrc.match(DATE); out.dob = /DOB/.test(dobSrc) && +d[1] <= 12 && +d[2] > 12 ? usDate(d[1], d[2], d[3]) : normDate(d[1], d[2], d[3]); }
@@ -90,14 +103,19 @@
   }
 
   function parseDoc(raw) {
-    const text = String(raw || "").toUpperCase().replace(/\r/g, "").replace(/[“”"]/g, "");
+    const orig = String(raw || "").replace(/\r/g, "").replace(/[“”"]/g, "").replace(/©/g, "C");
+    const text = orig.toUpperCase();
     const z = mrz(text);
-    const n = numbered(text), l = labelled(text);
+    const n = numbered(orig), l = labelled(text);
     const r = { ...l, ...n };
     if (z) { ["mbiemri", "emri", "dob", "nrId"].forEach(k => { if (z[k]) r[k] = z[k]; }); r.burimi = z.burimi; }
     else r.burimi = "patenta";
     // nr. personal shqiptar diku në tekst (p.sh. K31104050E), nëse nuk u gjet te 4d
     if (!r.nrId) { const p = text.match(/\b[A-Z]\d{8}[A-Z]\b/); if (p) r.nrId = p[0]; }
+    // nr. i patentës shqiptare/kosovare diku në tekst (p.sh. C24062041-1)
+    const fixed = text.replace(/(\d)[OIL](?=[\d-])/g, (m, a, b) => a + (m[1] === "O" ? "0" : "1")).replace(/(\d)[OIL](?=[\d-])/g, (m, a) => a + (m[1] === "O" ? "0" : "1"));
+    const lm = fixed.match(/(?:^|[^A-Z0-9])([A-Z€]{1,2})?(\d{8})-(\d)\b/);
+    if (lm && (!r.nrPatente || !/^[A-Z]/.test(r.nrPatente))) r.nrPatente = (lm[1] ? lm[1].replace(/€/g, "C")[0] : "") + lm[2] + "-" + lm[3];
     // pastrim: emrat duhet të kenë të paktën 2 shkronja
     ["mbiemri", "emri"].forEach(k => { if (r[k] && r[k].replace(/[^A-Z]/g, "").length < 2) delete r[k]; });
     if (r.nrPatente && r.nrPatente.replace(/[^0-9]/g, "").length < 4) delete r.nrPatente;

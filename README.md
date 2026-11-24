@@ -57,11 +57,12 @@ Del ikona **Perfect Car** si aplikacion.
 - Çdo kontratë e përditëson vetë makinën në listë (KM dhe dëmtimet). Edhe makina që nuk është në listë shtohet vetë.
 - Lista ruhet në Google Drive (`flota.json`) dhe është e njëjtë në çdo telefon.
 
-## 3c. Pa internet
-- Aplikacioni ruhet në telefon pas hapjes së parë dhe **hapet edhe pa internet** (lart del "Pa internet").
-- Pa internet punon **"Plotëso këtu"** (në tablet): klienti fotografon, plotëson dhe firmos, dhe PDF-ja krijohet në telefon.
-- Kontrata **ruhet në telefon** dhe **dërgohet vetë** (email + Drive) sapo të kthehet interneti. Te paneli del "📤 N kontrata në pritje" me butonin **Dërgo tani**.
-- Pa internet **nuk** punojnë: linku për klientin dhe leximi automatik i patentës (klienti i shkruan të dhënat me dorë).
+## 3c. Pa internet (p.sh. në garazh, kati -3)
+- Aplikacioni duhet hapur **një herë me internet** pas çdo përditësimi. Atëherë ruhet në telefon (~10 MB, bashkë me lexuesin e patentës).
+  Instaloje në ekranin bazë (**Add to Home screen**), që telefoni të mos e fshijë.
+- Pa internet punon **"Plotëso këtu"**: fotot, **leximi i patentës në vetë telefonin** (10–20 sekonda), konfirmimi, PO/JO, firma dhe PDF-ja.
+- Kontrata **ruhet në telefon** dhe **dërgohet vetë** (email + Drive) sapo telefoni të kapë internet. Në Android dërgohet edhe me aplikacionin të mbyllur. Te paneli del "📤 N kontrata në pritje" me butonin **Dërgo tani**.
+- Pa internet **nuk** punon vetëm linku për klientin, sepse klienti duhet ta hapë në telefonin e vet.
 
 ## 4. Ndryshimet
 
@@ -131,7 +132,8 @@ Google Drive
 |---|---|
 | `index.html` | i gjithë aplikacioni |
 | `manifest.json` | që të instalohet si aplikacion |
-| `sw.js` | që aplikacioni të hapet edhe pa internet |
+| `sw.js` | që aplikacioni të hapet edhe pa internet dhe të dërgojë kontratat në pritje |
+| `assets/ocr/` | lexuesi i patentës pa internet (tesseract.js, licenca Apache 2.0) |
 | `assets/logo-*.png` | logoja |
 | `assets/icon-*.png` | ikona e aplikacionit |
 | `assets/html2pdf.bundle.min.js` | libraria që krijon PDF-në |
