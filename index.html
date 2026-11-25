@@ -46,8 +46,14 @@ input:focus,select:focus,textarea:focus{outline:2px solid #121212;outline-offset
 .okmsg{color:var(--ok);font-weight:600}
 .photo-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:2px dashed #b9c0cf;border-radius:12px;min-height:110px;padding:12px;text-align:center;cursor:pointer;background:#fafbfc;color:var(--muted);font-size:14px;position:relative;overflow:hidden}
 .photo-btn b{color:var(--ink);font-size:15px}
-.photo-btn input{position:absolute;inset:0;opacity:0;cursor:pointer}
-.photo-btn img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.photo-btn{cursor:default;min-height:150px;justify-content:flex-start}
+.photo-btn img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+.photo-btn b,.photo-btn .sub{position:relative;z-index:1}
+.photo-btn.has b,.photo-btn.has .sub{background:#ffffffd9;border-radius:6px;padding:0 6px}
+.pick2{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;margin-top:auto;padding-top:10px}
+.pick2 label{display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;border-radius:10px;background:#121212;color:#fff;font-weight:600;font-size:14px;cursor:pointer;position:relative}
+.pick2 label.gal{background:#fff;color:#121212;border:1.5px solid #121212}
+.pick2 input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
 .photo-btn.has{border-style:solid;border-color:var(--ok)}
 .thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .thumbs div{position:relative}
@@ -258,7 +264,7 @@ input.auto{background:#fff8d6;border-color:#e0b800}
   <div class="card">
     <h2>Fotot e makinës</h2>
     <p class="hint">Bëj foto nga të gjitha anët: para, mbrapa, majtas, djathtas, brenda dhe paneli (km + karburant). Deri në 10 foto.</p>
-    <label class="photo-btn"><b>+ Shto foto</b>Hap kamerën<input type="file" accept="image/*" capture="environment" multiple id="sCarIn"></label>
+    <div class="photo-btn"><b>+ Shto foto të makinës</b><span class="sub">Bëj foto ose zgjidh nga galeria</span><div class="pick2"><label>📷 Kamera<input type="file" accept="image/*" capture="environment" multiple id="sCarIn"></label><label class="gal">🖼 Galeria<input type="file" accept="image/*" multiple id="sCarInG"></label></div></div>
     <div class="thumbs" id="sCarThumbs"></div>
   </div>
 
@@ -356,13 +362,13 @@ input.auto{background:#fff8d6;border-color:#e0b800}
       <h2>Fotografoni patentën · Photograph your licence</h2>
       <p class="hint">Vendoseni në tavolinë, pa dritë direkte mbi të, dhe fotografojeni të gjithë. Të dhënat tuaja plotësohen vetë. · Place it on a table, avoid glare – your details fill in automatically.</p>
       <div class="grid">
-        <label class="photo-btn" id="pb_lic"><b>Patenta – përpara *</b>Driving licence – front<input type="file" accept="image/*" capture="environment" data-k="lic"></label>
-        <label class="photo-btn" id="pb_licB"><b>Patenta – mbrapa *</b>Driving licence – back<input type="file" accept="image/*" capture="environment" data-k="licB"></label>
+        <div class="photo-btn" id="pb_lic"><b>Patenta – përpara *</b><span class="sub">Driving licence – front</span><div class="pick2"><label>📷 Kamera<input type="file" accept="image/*" capture="environment" data-k="lic"></label><label class="gal">🖼 Galeria<input type="file" accept="image/*" data-k="lic"></label></div></div>
+        <div class="photo-btn" id="pb_licB"><b>Patenta – mbrapa *</b><span class="sub">Driving licence – back</span><div class="pick2"><label>📷 Kamera<input type="file" accept="image/*" capture="environment" data-k="licB"></label><label class="gal">🖼 Galeria<input type="file" accept="image/*" data-k="licB"></label></div></div>
       </div>
       <details class="more"><summary>+ ID / Pasaportë (opsionale)</summary>
         <div class="grid" style="margin-top:10px">
-          <label class="photo-btn" id="pb_idF"><b>ID / Pasaportë</b>ID / Passport<input type="file" accept="image/*" capture="environment" data-k="idF"></label>
-          <label class="photo-btn" id="pb_idB"><b>ID – mbrapa</b>ID – back<input type="file" accept="image/*" capture="environment" data-k="idB"></label>
+          <div class="photo-btn" id="pb_idF"><b>ID / Pasaportë</b><span class="sub">ID / Passport</span><div class="pick2"><label>📷 Kamera<input type="file" accept="image/*" capture="environment" data-k="idF"></label><label class="gal">🖼 Galeria<input type="file" accept="image/*" data-k="idF"></label></div></div>
+          <div class="photo-btn" id="pb_idB"><b>ID – mbrapa</b><span class="sub">ID – back</span><div class="pick2"><label>📷 Kamera<input type="file" accept="image/*" capture="environment" data-k="idB"></label><label class="gal">🖼 Galeria<input type="file" accept="image/*" data-k="idB"></label></div></div>
         </div>
       </details>
       <div id="ocrMsg" class="ocrmsg hidden"></div>
@@ -703,7 +709,8 @@ function initStaff(){
     $("om").value = `${pad(t.getHours())}:${pad(t.getMinutes())}`; }
   showDays(); drawStaffCars();
   $("staff").addEventListener("input", saveStaff); $("staff").addEventListener("change", saveStaff);
-  $("sCarIn").addEventListener("change", async e => { for (const f of e.target.files) { if (staffCars.length >= 10) break; staffCars.push(await loadImg(f, 1100, .75)); } e.target.value = ""; drawStaffCars(); saveStaff(); });
+  const addCarPhotos = async e => { for (const f of e.target.files) { if (staffCars.length >= 10) break; staffCars.push(await loadImg(f, 1100, .75)); } e.target.value = ""; drawStaffCars(); saveStaff(); };
+  $("sCarIn").addEventListener("change", addCarPhotos); $("sCarInG").addEventListener("change", addCarPhotos);
   $("sCarThumbs").addEventListener("click", e => { const i = e.target.dataset.si; if (i !== undefined) { staffCars.splice(+i, 1); drawStaffCars(); saveStaff(); } });
   $("clearStaff").onclick = newContract; $("newTop").onclick = newContract; $("resumeNew").onclick = newContract;
   $("resumeGo").onclick = () => $("resume").classList.add("hidden");
@@ -783,6 +790,7 @@ function initClient(){
   $("client").addEventListener("input", e => { if (e.target.classList) e.target.classList.remove("auto"); saveClient(); });
   document.querySelectorAll("input[data-k]").forEach(inp => inp.addEventListener("change", async e => {
     const f = e.target.files[0]; if (!f) return; const k = e.target.dataset.k; C[k] = await loadImg(f);
+    e.target.value = "";
     if (k === "lic" || k === "idF") readDoc(f);
     const box = $("pb_"+k); box.classList.add("has"); let im = box.querySelector("img"); if (!im) { im = document.createElement("img"); box.appendChild(im); } im.src = C[k]; saveClient();
   }));

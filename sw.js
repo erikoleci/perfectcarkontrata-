@@ -1,6 +1,6 @@
 /* Perfect Car Rental – ruan aplikacionin në pajisje që të punojë edhe pa internet,
  * dhe dërgon kontratat në pritje sapo të ketë internet (edhe me aplikacionin të mbyllur, në Android). */
-const CACHE = "pcr-app-v2";
+const CACHE = "pcr-app-v3";
 const SHELL = [
   "./", "index.html", "manifest.json",
   "assets/html2pdf.bundle.min.js", "assets/docparse.js",
